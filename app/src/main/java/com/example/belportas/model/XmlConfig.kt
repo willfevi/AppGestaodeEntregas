@@ -7,7 +7,7 @@ import org.xmlpull.v1.XmlPullParserException
 import java.io.IOException
 import java.io.StringReader
 import java.text.SimpleDateFormat
-
+import java.util.Locale
 
 class XmlConfig {
 
@@ -37,14 +37,15 @@ class XmlConfig {
     }
 
     @Throws(XmlPullParserException::class, IOException::class)
-    private fun readNFe(parser: XmlPullParser): Task {
+    private fun readNFe(parser: XmlPullParser): Task? {
         var noteNumber = ""
         var value = ""
         var address = ""
-        var city = ""
-        var deliveryStatus = ""
+        val distance = ""
+        val deliveryStatus = ""
         var date = ""
         var clientName = ""
+        var phoneClient = ""
 
         parser.require(XmlPullParser.START_TAG, null, "NFe")
         while (parser.next() != XmlPullParser.END_TAG) {
@@ -69,9 +70,10 @@ class XmlConfig {
                                         "nNF" -> noteNumber = readValue(parser, "nNF")
                                         "dhEmi" -> {
                                             val rawDate = readValue(parser, "dhEmi")
-                                            val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX")
-                                            val outputFormat = SimpleDateFormat("dd/MM/yyyy ")
-                                            date = outputFormat.format(inputFormat.parse(rawDate))
+                                            val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX", Locale.US)
+                                            val outputFormat = SimpleDateFormat("dd/MM/yyyy", Locale("pt", "BR"))
+                                            date = outputFormat.format(inputFormat.parse(rawDate) ?: return null)
+
                                         }
                                         else -> skip(parser)
                                     }
@@ -87,34 +89,40 @@ class XmlConfig {
                                         "xNome" -> clientName = readValue(parser, "xNome")
                                         "enderDest" -> {
                                             parser.require(XmlPullParser.START_TAG, null, "enderDest")
+                                            val addressBuilder = StringBuilder()
                                             while (parser.next() != XmlPullParser.END_TAG) {
                                                 if (parser.eventType != XmlPullParser.START_TAG) {
                                                     continue
                                                 }
                                                 when (parser.name) {
+                                                    "fone" -> {
+                                                        phoneClient = readValue(parser, "fone")
+                                                    }
                                                     "xMun" -> {
-                                                        city = readValue(parser, "xMun") + " "
+                                                        addressBuilder.append(readValue(parser, "xMun")).append(", ")
                                                     }
                                                     "UF" -> {
-                                                        city += readValue(parser, "UF") + " "
+                                                        addressBuilder.append(readValue(parser, "UF")).append(", ")
                                                     }
                                                     "xBairro" -> {
-                                                        address += readValue(parser, "xBairro") + " "
+                                                        addressBuilder.append(readValue(parser, "xBairro")).append(", ")
                                                     }
                                                     "xLgr" -> {
-                                                        address += readValue(parser, "xLgr") + " "
+                                                        addressBuilder.append(readValue(parser, "xLgr")).append(" ")
                                                     }
                                                     "nro" -> {
-                                                        address += readValue(parser, "nro") + " "
+                                                        addressBuilder.append(readValue(parser, "nro")).append(", ")
                                                     }
-                                                    "xCpl" -> {
-                                                        address += readValue(parser, "xCpl")
+                                                    "CEP" -> {
+                                                        addressBuilder.append(readValue(parser, "CEP")).append(", ")
                                                     }
                                                     else -> {
                                                         skip(parser)
                                                     }
                                                 }
                                             }
+                                            addressBuilder.append("BRASIL")
+                                            address = addressBuilder.toString()
                                         }
                                         else -> skip(parser)
                                     }
@@ -143,29 +151,6 @@ class XmlConfig {
                                     }
                                 }
                             }
-                            "pag" -> {
-                                parser.require(XmlPullParser.START_TAG, null, "pag")
-                                while (parser.next() != XmlPullParser.END_TAG) {
-                                    if (parser.eventType != XmlPullParser.START_TAG) {
-                                        continue
-                                    }
-                                    if (parser.name == "detPag") {
-                                        parser.require(XmlPullParser.START_TAG, null, "detPag")
-                                        while (parser.next() != XmlPullParser.END_TAG) {
-                                            if (parser.eventType != XmlPullParser.START_TAG) {
-                                                continue
-                                            }
-                                            if (parser.name == "vPag") {
-                                                value = readValue(parser, "vPag")
-                                            } else {
-                                                skip(parser)
-                                            }
-                                        }
-                                    } else {
-                                        skip(parser)
-                                    }
-                                }
-                            }
                             else -> skip(parser)
                         }
                     }
@@ -173,7 +158,9 @@ class XmlConfig {
                 else -> skip(parser)
             }
         }
-        return Task(0, noteNumber, value, address, city, deliveryStatus, date, clientName)
+        val outputFormat = SimpleDateFormat("dd/MM/yyyy", Locale.US)
+        val parsedDate = outputFormat.parse(date) ?: return null
+        return Task(0, noteNumber, phoneClient, value, address, distance, deliveryStatus, parsedDate, clientName)
     }
 
     @Throws(IOException::class, XmlPullParserException::class)

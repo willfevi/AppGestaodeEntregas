@@ -7,6 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,9 +18,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
@@ -31,22 +29,17 @@ import java.util.concurrent.Executors
 @Stable
 @Composable
 fun BarcodeScreen(
-    onNavigateBack: () -> Unit,
-    onDismiss: () -> Unit) {
+    onDismiss: () -> Unit
+) {
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
-                    val text = buildAnnotatedString {
-                        val customGreen = Color(0xFF4CAF50)
-                        withStyle(style = SpanStyle(color = Color.White)) {
-                            append("App Bel")
-                        }
-                        withStyle(style = SpanStyle(color = customGreen)) {
-                            append("portas")
-                        }
+                    Box(modifier =Modifier.fillMaxWidth(0.50f)){ Image(
+                        painter = painterResource(id = R.drawable.icon_belportas_topbar),
+                        contentDescription = "App top bar logo "
+                    )
                     }
-                    Text(text = text)
                 },
                 navigationIcon = {
                     IconButton(onClick = onDismiss) {

@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <style name="Theme.BelPortas" parent="android:Theme.Material.Light.NoActionBar">
-        <item name="android:statusBarColor">@color/bege_700</item>
+    <style name="Theme.BelPortas" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorPrimary">@color/red</item>
+        <item name="colorSecondary">@color/red</item>
+        <item name="colorOnBackground">@color/red</item>
+        <item name="android:statusBarColor">@color/red</item>
     </style>
 </resources>

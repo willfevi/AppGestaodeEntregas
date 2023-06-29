@@ -11,18 +11,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.belportas.R
 import com.example.belportas.model.TaskViewModel
 import com.example.belportas.model.XmlConfig
-import java.io.InputStream
 
 @Composable
 fun FileScreen(
@@ -61,16 +56,10 @@ fun FileScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    val text = buildAnnotatedString {
-                        val customGreen = Color(0xFF4CAF50)
-                        withStyle(style = SpanStyle(color = Color.White)) {
-                            append("App Bel")
-                        }
-                        withStyle(style = SpanStyle(color = customGreen)) {
-                            append("portas")
-                        }
-                    }
-                    Text(text = text)
+                    Box(modifier =Modifier.fillMaxWidth(0.50f)){ Image(
+                        painter = painterResource(id = R.drawable.icon_belportas_topbar),
+                        contentDescription = "App top bar logo "
+                    )}
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {

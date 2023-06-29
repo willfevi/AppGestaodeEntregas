@@ -25,13 +25,11 @@ class BarcodeAnalyser(
             scanner.process(image)
                 .addOnSuccessListener { barcodes ->
                     if (barcodes.size > 0) {
-                        val barcodeValue = barcodes[0].rawValue ?: ""  // rawValue can be null, so using safe call
+                        val barcodeValue = barcodes[0].rawValue ?: ""
                         callback(barcodeValue)
                     }
                 }
                 .addOnFailureListener {
-                    // Task failed with an exception
-                    // ...
                 }
         }
         imageProxy.close()

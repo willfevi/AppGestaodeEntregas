@@ -1,16 +1,14 @@
 package com.example.belportas.presentation.view
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.ExperimentalGetImage
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.layout
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -18,14 +16,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.belportas.model.TaskViewModel
 import com.example.belportas.ui.theme.BelPortasTheme
-import com.example.belportas.view.AddTaskScreen
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
 
 @ExperimentalGetImage
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
     private val taskViewModel: TaskViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -69,22 +66,6 @@ fun PermissionScreen(
         }
     }
 }
-
-fun Modifier.widthInFraction(fraction: Float): Modifier = this.then(
-    Modifier.layout { measurable, constraints ->
-        val maxWidth = constraints.maxWidth
-        val width = (maxWidth * fraction).toInt()
-        val placeable = measurable.measure(
-            constraints.copy(
-                minWidth = width,
-                maxWidth = width
-            )
-        )
-        layout(width, placeable.height) {
-            placeable.place(0, 0)
-        }
-    }
-)
 
 @OptIn(ExperimentalPermissionsApi::class)
 @ExperimentalGetImage
@@ -143,14 +124,9 @@ fun BelPortasApp(navController: NavHostController, taskViewModel: TaskViewModel)
                 )
             }
             composable("barcodeScreen") {
-                BarcodeScreen(
-                    onDismiss = {
-                        navController.popBackStack()
-                    },
-                    onNavigateBack = {
-                        navController.navigate("filescreen")
-                    }
-                )
+                BarcodeScreen {
+                    navController.popBackStack()
+                }
             }
             composable("filescreen") {
                 FileScreen(
@@ -178,16 +154,5 @@ fun BelPortasApp(navController: NavHostController, taskViewModel: TaskViewModel)
             }
 
         }
-    }
-}
-
-
-
-
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    BelPortasTheme {
-        Text("Preview")
     }
 }

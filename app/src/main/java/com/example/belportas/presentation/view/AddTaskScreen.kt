@@ -1,27 +1,45 @@
-package com.example.belportas.view
-import androidx.compose.foundation.layout.*
+package com.example.belportas.presentation.view
+
+import android.app.DatePickerDialog
+import android.widget.Toast
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.*
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Text
+import androidx.compose.material.TopAppBar
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import com.example.belportas.model.data.Task
 import com.example.belportas.R
 import com.example.belportas.model.TaskViewModel
-import com.example.belportas.presentation.view.widthInFraction
-
+import com.example.belportas.model.data.Task
+import java.text.ParseException
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 @Composable
 fun AddTaskScreen(
@@ -30,27 +48,24 @@ fun AddTaskScreen(
 ) {
     val idValue = remember { mutableStateOf("") }
     val noteNumberValue = remember { mutableStateOf("") }
+    val phoneValue = remember { mutableStateOf("") }
     val valueValue = remember { mutableStateOf("") }
     val addressValue = remember { mutableStateOf("") }
-    val cityValue = remember { mutableStateOf("") }
+    val distanceValue = remember { mutableStateOf("") }
     val deliveryStatusValue = remember { mutableStateOf("") }
-    val dateValue = remember { mutableStateOf("") }
+    val dateValue = remember { mutableStateOf("00/00/0000") }
     val clientNameValue = remember { mutableStateOf("") }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
-                    val text = buildAnnotatedString {
-                        val customGreen = Color(0xFF4CAF50)
-                        withStyle(style = SpanStyle(color = Color.White)) {
-                            append("App Bel")
-                        }
-                        withStyle(style = SpanStyle(color = customGreen)) {
-                            append("portas")
-                        }
+                    Box(modifier = Modifier.fillMaxWidth(0.50f)) {
+                        Image(
+                            painter = painterResource(id = R.drawable.icon_belportas_topbar),
+                            contentDescription = "App top bar logo "
+                        )
                     }
-                    Text(text = text)
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
@@ -67,131 +82,54 @@ fun AddTaskScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
-                    .verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                OutlinedTextField(
-                    value = idValue.value,
-                    onValueChange = { idValue.value = it },
-                    label = { Text(text = "ID") },
-                    modifier = Modifier
-                        .widthInFraction(0.95f)
-                        .padding(bottom = 8.dp),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        focusedBorderColor = MaterialTheme.colors.primary,
-                        unfocusedBorderColor = MaterialTheme.colors.onSurface,
-                        focusedLabelColor = MaterialTheme.colors.primary,
-                        unfocusedLabelColor = MaterialTheme.colors.onSurface
-                    ),
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Number
-                    )
-                )
-                OutlinedTextField(
-                    value = noteNumberValue.value,
-                    onValueChange = { noteNumberValue.value = it },
-                    label = { Text(text = "Número da Nota") },
-                    modifier = Modifier
-                        .widthInFraction(0.95f)
-                        .padding(bottom = 8.dp),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        focusedBorderColor = MaterialTheme.colors.primary,
-                        unfocusedBorderColor = MaterialTheme.colors.onSurface,
-                        focusedLabelColor = MaterialTheme.colors.primary,
-                        unfocusedLabelColor = MaterialTheme.colors.onSurface
-                    )
-                )
-                OutlinedTextField(
-                    value = valueValue.value,
-                    onValueChange = { valueValue.value = it },
-                    label = { Text(text = "Valor") },
-                    modifier = Modifier
-                        .widthInFraction(0.95f)
-                        .padding(bottom = 8.dp),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        focusedBorderColor = MaterialTheme.colors.primary,
-                        unfocusedBorderColor = MaterialTheme.colors.onSurface,
-                        focusedLabelColor = MaterialTheme.colors.primary,
-                        unfocusedLabelColor = MaterialTheme.colors.onSurface
-                    )
-                )
-                OutlinedTextField(
-                    value = addressValue.value,
-                    onValueChange = { addressValue.value = it },
-                    label = { Text(text = "Endereço") },
-                    modifier = Modifier
-                        .widthInFraction(0.95f)
-                        .padding(bottom = 8.dp),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        focusedBorderColor = MaterialTheme.colors.primary,
-                        unfocusedBorderColor = MaterialTheme.colors.onSurface,
-                        focusedLabelColor = MaterialTheme.colors.primary,
-                        unfocusedLabelColor = MaterialTheme.colors.onSurface
-                    )
-                )
-                OutlinedTextField(
-                    value = deliveryStatusValue.value,
-                    onValueChange = { deliveryStatusValue.value = it },
-                    label = { Text(text = "Status de Entrega") },
-                    modifier = Modifier
-                        .widthInFraction(0.95f)
-                        .padding(bottom = 8.dp),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        focusedBorderColor = MaterialTheme.colors.primary,
-                        unfocusedBorderColor = MaterialTheme.colors.onSurface,
-                        focusedLabelColor = MaterialTheme.colors.primary,
-                        unfocusedLabelColor = MaterialTheme.colors.onSurface
-                    )
-                )
-                OutlinedTextField(
-                    value = dateValue.value,
-                    onValueChange = { dateValue.value = it },
-                    label = { Text(text = "Data") },
-                    modifier = Modifier
-                        .widthInFraction(0.95f)
-                        .padding(bottom = 8.dp),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        focusedBorderColor = MaterialTheme.colors.primary,
-                        unfocusedBorderColor = MaterialTheme.colors.onSurface,
-                        focusedLabelColor = MaterialTheme.colors.primary,
-                        unfocusedLabelColor = MaterialTheme.colors.onSurface
-                    )
-                )
-                OutlinedTextField(
-                    value = clientNameValue.value,
-                    onValueChange = { clientNameValue.value = it },
-                    label = { Text(text = "Nome do Cliente") },
-                    modifier = Modifier
-                        .widthInFraction(0.95f)
-                        .padding(bottom = 8.dp),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        focusedBorderColor = MaterialTheme.colors.primary,
-                        unfocusedBorderColor = MaterialTheme.colors.onSurface,
-                        focusedLabelColor = MaterialTheme.colors.primary,
-                        unfocusedLabelColor = MaterialTheme.colors.onSurface
-                    )
-                )
+                CustomOutlinedTextField(idValue, "ID", KeyboardType.Number)
+                CustomOutlinedTextField(noteNumberValue, "Número da Nota", KeyboardType.Number)
+                CustomOutlinedTextField(valueValue, "Valor", KeyboardType.Number)
+                CustomOutlinedTextField(addressValue, "Endereço")
+                CustomOutlinedTextField(distanceValue, "Distância", KeyboardType.Number)
+                CustomOutlinedTextField(deliveryStatusValue, "Status de Entrega")
+                DatePickerButton(dateValue)
+                CustomOutlinedTextField(clientNameValue, "Nome do Cliente")
+                CustomOutlinedTextField(phoneValue, "Contato", KeyboardType.Number)
+
+                val context = LocalContext.current
                 Button(
                     onClick = {
-                        val task = Task(
-                            id = idValue.value.toLongOrNull() ?: 0,
-                            noteNumber = noteNumberValue.value,
-                            value = valueValue.value,
-                            address = addressValue.value,
-                            city=cityValue.value,
-                            deliveryStatus = deliveryStatusValue.value,
-                            date = dateValue.value,
-                            clientName = clientNameValue.value
-                        )
-                        taskViewModel.addTask(task)
-                        onNavigateBack()
+                        val sdf = SimpleDateFormat("dd/MM/yyyy", Locale("pt", "BR"))
+                        try {
+                            val date = sdf.parse(dateValue.value)
+                            val currentDate = sdf.format(System.currentTimeMillis())
 
+                            if (idValue.value.isNotEmpty() && noteNumberValue.value.isNotEmpty() &&
+                                valueValue.value.isNotEmpty() && addressValue.value.isNotEmpty() &&
+                                distanceValue.value.isNotEmpty() &&deliveryStatusValue.value.isNotEmpty() &&
+                                clientNameValue.value.isNotEmpty() && phoneValue.value.isNotEmpty() && date != null &&
+                                dateValue.value == currentDate) {
+
+                                val task = Task(
+                                    id = idValue.value.toLong(),
+                                    noteNumber = noteNumberValue.value,
+                                    value = valueValue.value,
+                                    address = addressValue.value,
+                                    distance = distanceValue.value,
+                                    deliveryStatus = deliveryStatusValue.value,
+                                    date = date,
+                                    clientName = clientNameValue.value,
+                                    phoneClient = phoneValue.value
+                                )
+                                taskViewModel.addTask(task)
+                                Toast.makeText(context, "Tarefa inserida com sucesso!", Toast.LENGTH_SHORT).show()
+                                onNavigateBack()
+
+                            } else {
+                                Toast.makeText(context, "Preencha todos os campos da tarefa!", Toast.LENGTH_SHORT).show()
+                            }
+                        } catch (e: ParseException) {
+                            Toast.makeText(context, "Data inválida! Certifique-se de usar o formato dd/MM/yyyy", Toast.LENGTH_SHORT).show()
+                        }
                     },
                     modifier = Modifier
                         .widthInFraction(0.9f)
@@ -203,3 +141,49 @@ fun AddTaskScreen(
         }
     )
 }
+
+@Composable
+fun DatePickerButton(dateValue: MutableState<String>) {
+    val context = LocalContext.current
+    val calendar = Calendar.getInstance()
+    val dateSetListener = DatePickerDialog.OnDateSetListener { _, year, month, day ->
+        val selectedDate = Calendar.getInstance()
+        selectedDate.set(year, month, day)
+        dateValue.value = SimpleDateFormat("dd/MM/yyyy", Locale("pt", "BR")).format(selectedDate.time)
+    }
+
+    Button(
+        onClick = {
+            DatePickerDialog(
+                context,
+                dateSetListener,
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+            ).show()
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        shape = RoundedCornerShape(8.dp),
+        colors = ButtonDefaults.buttonColors(
+            backgroundColor = MaterialTheme.colors.primary,
+        )
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                Icons.Default.DateRange,
+                contentDescription = "Date Range",
+                tint = Color.White,
+                modifier = Modifier.padding(end = 8.dp)
+            )
+            Text(
+                text = if (dateValue.value == "00/00/0000") "Selecione a data" else "Data:${dateValue.value}",
+                color = Color.White
+            )
+        }
+    }
+}
+
+
+
