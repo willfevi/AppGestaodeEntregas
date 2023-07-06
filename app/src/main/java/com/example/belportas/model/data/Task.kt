@@ -9,8 +9,9 @@ data class Task(
     val phoneClient:String,
     val value: String,
     val address: String,
+    val cep: String,
     var distance :String,
-    val deliveryStatus: String,
+    val deliveryStatus: Boolean,
     val date: Date?,
     val clientName: String
 ): Serializable

@@ -17,8 +17,8 @@ class LocationService(private val context: Context) {
 
     private val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
     private val locationRequest: LocationRequest = LocationRequest.create().apply {
-        interval = 2 * 60 * 1000  // Increased from 1 minute to 2 minutes
-        fastestInterval = 1 * 60 * 1000  // Increased from 30 seconds to 1 minute
+        interval = 2 * 60 * 1000
+        fastestInterval = 1 * 60 * 1000
         priority = LocationRequest.PRIORITY_HIGH_ACCURACY
     }
 
@@ -28,7 +28,6 @@ class LocationService(private val context: Context) {
 
     private val calculateDistanceSemaphore = Semaphore(1)
 
-    // A cache to store the distance for each address
     private val distanceCache = mutableMapOf<String, Deferred<Long>>()
 
     @SuppressLint("MissingPermission")

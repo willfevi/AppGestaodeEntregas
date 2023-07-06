@@ -35,15 +35,15 @@ class XmlConfig {
         }
         return null
     }
-
     @Throws(XmlPullParserException::class, IOException::class)
     private fun readNFe(parser: XmlPullParser): Task? {
         var noteNumber = ""
         var value = ""
         var address = ""
-        val distance = ""
-        val deliveryStatus = ""
-        var date = ""
+        var cep=""
+        val distance = "\uD83D\uDD01"
+        val deliveryStatus = true
+        var date =""
         var clientName = ""
         var phoneClient = ""
 
@@ -73,7 +73,6 @@ class XmlConfig {
                                             val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX", Locale.US)
                                             val outputFormat = SimpleDateFormat("dd/MM/yyyy", Locale("pt", "BR"))
                                             date = outputFormat.format(inputFormat.parse(rawDate) ?: return null)
-
                                         }
                                         else -> skip(parser)
                                     }
@@ -111,17 +110,17 @@ class XmlConfig {
                                                         addressBuilder.append(readValue(parser, "xLgr")).append(" ")
                                                     }
                                                     "nro" -> {
-                                                        addressBuilder.append(readValue(parser, "nro")).append(", ")
+                                                        addressBuilder.append(readValue(parser, "nro")).append(" - ")
                                                     }
                                                     "CEP" -> {
-                                                        addressBuilder.append(readValue(parser, "CEP")).append(", ")
+                                                        cep= readValue(parser, "CEP")
                                                     }
                                                     else -> {
                                                         skip(parser)
                                                     }
                                                 }
                                             }
-                                            addressBuilder.append("BRASIL")
+                                            addressBuilder.append("- BRASIL")
                                             address = addressBuilder.toString()
                                         }
                                         else -> skip(parser)
@@ -160,8 +159,20 @@ class XmlConfig {
         }
         val outputFormat = SimpleDateFormat("dd/MM/yyyy", Locale.US)
         val parsedDate = outputFormat.parse(date) ?: return null
-        return Task(0, noteNumber, phoneClient, value, address, distance, deliveryStatus, parsedDate, clientName)
+        return Task(
+            0,
+            noteNumber,
+            phoneClient,
+            value,
+            address,
+            cep,
+            distance,
+            deliveryStatus,
+            parsedDate,
+            clientName
+        )
     }
+
 
     @Throws(IOException::class, XmlPullParserException::class)
     private fun readValue(parser: XmlPullParser, tag: String): String {

@@ -5,6 +5,8 @@
     <color name="bege_700">#FFFC483B</color>
     <color name="teal_200">#FFFC483B</color>
     <color name="teal_700">#FF018786</color>
+    <color name="green_icon_wpp">#4CAF50</color>
+    <color name="blue_phone_icon">#2196F3</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 </resources>

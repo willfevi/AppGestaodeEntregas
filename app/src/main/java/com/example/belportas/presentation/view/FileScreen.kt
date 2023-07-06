@@ -16,7 +16,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.belportas.R
-import com.example.belportas.model.TaskViewModel
+import com.example.belportas.model.data.TaskViewModel
 import com.example.belportas.model.XmlConfig
 
 @Composable
@@ -36,7 +36,7 @@ fun FileScreen(
             try {
                     context.contentResolver.openInputStream(it)?.use { inputStream ->
                         val xmlString = inputStream.bufferedReader().use { reader -> reader.readText() }
-                        xmlString?.let { xml ->
+                        xmlString.let { xml ->
                             val task = xmlConfig.parseXml(xml)
                             task?.let { parsedTask ->
                                 taskViewModel.addTask(parsedTask)
@@ -96,7 +96,7 @@ fun FileScreen(
 
                     }},
                     modifier = Modifier
-                        .widthInFraction(0.8f)
+                        .fillMaxWidth(0.9f)
                         .height(100.dp)
                         .padding(vertical = 8.dp)
                 ) {
@@ -111,7 +111,7 @@ fun FileScreen(
                 Button(
                     onClick = { onNavigateToBarcode() },
                     modifier = Modifier
-                        .widthInFraction(0.8f)
+                        .fillMaxWidth(0.9f)
                         .height(100.dp)
                         .padding(vertical = 8.dp)
                 ) {
@@ -126,7 +126,7 @@ fun FileScreen(
                 Button(
                     onClick = { onNavigateAddTaskScreen() },
                     modifier = Modifier
-                        .widthInFraction(0.8f)
+                        .fillMaxWidth(0.9f)
                         .height(100.dp)
                         .padding(vertical = 8.dp)
                 ) {

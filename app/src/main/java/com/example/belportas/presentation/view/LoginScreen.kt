@@ -57,7 +57,7 @@ fun LoginScreen(
                 painter = painterResource(id = R.drawable.ic_login),
                 contentDescription = "Logo",
                 modifier = Modifier
-                    .widthInFraction(0.5f)
+                    .fillMaxWidth(0.5f)
             )
             Text(
                 text = "Login",
@@ -73,7 +73,7 @@ fun LoginScreen(
                     onLoginSuccess()
                 },
                 modifier = Modifier
-                    .widthInFraction(0.8f)
+                    .fillMaxWidth(0.9f)
                     .padding(top = 8.dp)
             ) {
                 Text(text = "Entrar")
@@ -81,7 +81,7 @@ fun LoginScreen(
             Button(
                 onClick = onNavigateToSignUp,
                 modifier = Modifier
-                    .widthInFraction(0.8f)
+                    .fillMaxWidth(0.9f)
                     .padding(top = 8.dp)
             ) {
                 Text(text = "Cadastre-se")
@@ -93,4 +93,5 @@ fun LoginScreen(
             )
         }
     }
+
 }

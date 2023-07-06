@@ -54,14 +54,14 @@ fun SingUp(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding), // Use the innerPadding provided by Scaffold
+                .padding(innerPadding),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Image(
                 painter = painterResource(id = R.drawable.ic_cadastro),
                 contentDescription = "Cadastro",
-                modifier = Modifier.widthInFraction(0.7f)
+                modifier = Modifier.fillMaxWidth(0.7f)
 
             )
             CustomOutlinedTextField(nameValue, "Nome", KeyboardType.Text)
@@ -71,7 +71,7 @@ fun SingUp(
             Button(
                 onClick = onNavigateToLogin,
                 modifier = Modifier
-                    .widthInFraction(0.8f)
+                    .fillMaxWidth(0.9f)
                     .padding(top = 16.dp)
             ) {
                 Text(text = "Cadastrar")

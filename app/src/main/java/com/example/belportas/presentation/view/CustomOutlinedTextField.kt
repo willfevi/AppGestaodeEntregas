@@ -1,5 +1,6 @@
 package com.example.belportas.presentation.view
 
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -25,7 +26,7 @@ fun CustomOutlinedTextField(
         onValueChange = { state.value = it },
         label = { Text(text = label) },
         modifier = Modifier
-            .widthInFraction(0.95f)
+            .fillMaxWidth(0.95f)
             .padding(bottom = 8.dp),
         shape = RoundedCornerShape(8.dp),
         colors = TextFieldDefaults.outlinedTextFieldColors(
@@ -39,19 +40,3 @@ fun CustomOutlinedTextField(
         )
     )
 }
-
-fun Modifier.widthInFraction(fraction: Float): Modifier = this.then(
-    Modifier.layout { measurable, constraints ->
-        val maxWidth = constraints.maxWidth
-        val width = (maxWidth * fraction).toInt()
-        val placeable = measurable.measure(
-            constraints.copy(
-                minWidth = width,
-                maxWidth = width
-            )
-        )
-        layout(width, placeable.height) {
-            placeable.place(0, 0)
-        }
-    }
-)

@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -38,7 +37,8 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.belportas.R
-import com.example.belportas.model.TaskViewModel
+import com.example.belportas.model.data.TaskViewModel
+import com.example.belportas.model.data.Task
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.google.android.material.datepicker.MaterialDatePicker
@@ -138,17 +138,22 @@ fun TaskListScreen(
                     .padding(top = 8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                itemsIndexed(filteredTasks.sortedBy { it.distance }) { index, task ->
+                itemsIndexed(filteredTasks.sortedWith(::compareByDistance)) { index, task ->
                     val isDetailsVisible = remember { mutableStateOf(false) }
                     TaskCard(
                         task = task,
-                        isDetailsVisible = isDetailsVisible,
-                        taskViewModel = taskViewModel
+                        isDetailsVisible = isDetailsVisible
                     )
                 }
             }
         }
     }
+}
+
+fun compareByDistance(task1: Task, task2: Task): Int {
+    val distance1 = task1.distance.split("km")[0].toIntOrNull() ?: 0
+    val distance2 = task2.distance.split("km")[0].toIntOrNull() ?: 0
+    return distance1.compareTo(distance2)
 }
 
 fun showDatePicker(context: Context, selectedDate: MutableState<Long?>) {

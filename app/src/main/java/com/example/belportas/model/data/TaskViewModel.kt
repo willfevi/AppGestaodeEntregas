@@ -1,4 +1,4 @@
-package com.example.belportas.model
+package com.example.belportas.model.data
 
 import android.app.Application
 import android.location.Location
@@ -8,8 +8,6 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.example.belportas.model.data.LocationService
-import com.example.belportas.model.data.Task
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
