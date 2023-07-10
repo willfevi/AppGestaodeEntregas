@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">BelPortas</string>
+    <string name="permission_dialog_title">Título do Diálogo</string>
+    <string name="permission_dialog_message">Mensagem explicando a necessidade da permissão</string>
+    <string name="permission_dialog_button_grant">Conceder</string>
+    <string name="permission_dialog_button_deny">Negar</string>
 </resources>

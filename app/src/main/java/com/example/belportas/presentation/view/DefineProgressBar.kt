@@ -17,7 +17,8 @@ fun DefineProgress( indicator : Boolean ){
     val colorGrey= Color(0xFFCCCBCA)
     if (!indicator){
         val colorOrange= Color(0xFFF7673A)
-        Text(text = "Status de Entrega: Em trânsito")
+        Text(text = "Status de Entrega: Em trânsito",
+            style =MaterialTheme.typography.subtitle2)
         LinearProgressIndicator(
             progress = 0.6f,
             color = (colorOrange),
@@ -28,7 +29,8 @@ fun DefineProgress( indicator : Boolean ){
         )
     }else {
         val colorGreen= Color(0xFF4CAF50)
-        Text(text = "Status de Entrega: Entregue")
+        Text(text = "Status de Entrega: Entregue",
+            style =MaterialTheme.typography.subtitle2)
         LinearProgressIndicator(
             progress = 1f,
             color = (colorGreen),

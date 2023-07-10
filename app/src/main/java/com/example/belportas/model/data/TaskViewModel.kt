@@ -45,12 +45,6 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun deleteTask(task: Task) {
-        _tasks.value?.apply {
-            remove(task)
-            _tasks.value = this
-        }
-    }
 
     fun updateAllDistances() {
         viewModelScope.launch(coroutineExceptionHandler) {

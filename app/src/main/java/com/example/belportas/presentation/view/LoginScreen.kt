@@ -68,8 +68,6 @@ fun LoginScreen(
             CustomOutlinedTextField(passwordValue, "Senha:", KeyboardType.Password)
             Button(
                 onClick = {
-                    // Aqui você pode adicionar a lógica para autenticar o usuário
-                    // Se a autenticação for bem-sucedida, chame onLoginSuccess()
                     onLoginSuccess()
                 },
                 modifier = Modifier

@@ -142,7 +142,8 @@ fun TaskListScreen(
                     val isDetailsVisible = remember { mutableStateOf(false) }
                     TaskCard(
                         task = task,
-                        isDetailsVisible = isDetailsVisible
+                        isDetailsVisible = isDetailsVisible,
+                        taskViewModel = taskViewModel
                     )
                 }
             }

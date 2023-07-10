@@ -43,8 +43,8 @@ fun AddTaskScreen(
     val valueValue = remember { mutableStateOf("") }
     val addressValue = remember { mutableStateOf("") }
     val cepValue = remember { mutableStateOf("") }
-    val distanceValue = remember { mutableStateOf("\uD83D\uDD01") }
-    val deliveryStatusValue = remember { mutableStateOf(false) }
+    val distanceValue = remember { mutableStateOf("↻") }
+    val deliveryStatusValue = remember { mutableStateOf(true) }
     val clientNameValue = remember { mutableStateOf("") }
 
     Scaffold(

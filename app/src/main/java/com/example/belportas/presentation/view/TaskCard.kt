@@ -17,10 +17,12 @@ import androidx.compose.material.Button
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Phone
@@ -41,13 +43,15 @@ import androidx.compose.ui.unit.dp
 import com.example.belportas.R
 import com.example.belportas.model.OpenExternalApps
 import com.example.belportas.model.data.Task
+import com.example.belportas.model.data.TaskViewModel
 import java.text.SimpleDateFormat
 import java.util.Locale
 
 @Composable
 fun TaskCard(
     task: Task,
-    isDetailsVisible: MutableState<Boolean>
+    isDetailsVisible: MutableState<Boolean>,
+    taskViewModel: TaskViewModel
 ) {
     val context = LocalContext.current
     val userNote = remember { mutableStateOf("") }
@@ -131,13 +135,14 @@ fun TaskCard(
                 }
                 Text(
                     text ="    Tel:    ${task.phoneClient}",
-                    fontWeight=FontWeight.Light)
+                    fontWeight=FontWeight.Light,
+                    style =MaterialTheme.typography.subtitle1)
 
                 Spacer(
                     modifier = Modifier.padding(16.dp))
                 Text(
-                    text = "        (${task.distance} km)",
-                    fontWeight = FontWeight.Light
+                    text = "      (${task.distance} km)",
+                    fontWeight = FontWeight.Bold
                 )
 
             }
@@ -151,7 +156,8 @@ fun TaskCard(
                         modifier = Modifier
                             .fillMaxWidth(0.8f)
                             .fillMaxSize(0.5f),
-                        fontWeight=FontWeight.Light
+                        fontWeight=FontWeight.Light,
+                        style =MaterialTheme.typography.subtitle2
                     )
 
                     IconButton(
@@ -164,23 +170,23 @@ fun TaskCard(
                     }
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Filled.List, contentDescription = "ID entrega")
-                    Text(text = "${task.id}", modifier = Modifier.padding(start = 8.dp))
                     Text(
-                        text = "    R$ ${task.value}",
+                        text = "R$ ${task.value}",
                         modifier = Modifier.padding(start = 8.dp),
-                        fontWeight = FontWeight.SemiBold
+                        fontWeight = FontWeight.SemiBold,
+                        style =MaterialTheme.typography.subtitle2
                     )
                     Text(
                         text = "       Data: $dateString",
+                        style =MaterialTheme.typography.subtitle2,
                         fontWeight = FontWeight.Light
                     )
                 }
                 DefineProgress(indicator = task.deliveryStatus)
-                Button(
+                Button(modifier= Modifier.fillMaxSize(0.3f),
                     onClick = { isNoteFieldVisible.value = true }
                 ) {
-                    Text("Adicionar nota de observação")
+                    Icon(Icons.Filled.Edit , contentDescription ="Observation" )
                 }
 
                 if (isNoteFieldVisible.value) {

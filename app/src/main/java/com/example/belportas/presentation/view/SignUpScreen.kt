@@ -28,8 +28,10 @@ fun SingUp(
     onNavigateBack: () -> Unit
 ) {
     val nameValue = remember { mutableStateOf("") }
+    val codAdminValue = remember { mutableStateOf("") }
     val emailValue = remember { mutableStateOf("") }
     val passwordValue = remember { mutableStateOf("") }
+    val confirmPasswordValue = remember { mutableStateOf("") }
 
     Scaffold(
         topBar = {
@@ -64,10 +66,11 @@ fun SingUp(
                 modifier = Modifier.fillMaxWidth(0.7f)
 
             )
-            CustomOutlinedTextField(nameValue, "Nome", KeyboardType.Text)
-            CustomOutlinedTextField(emailValue, "E-mail", KeyboardType.Email)
-            CustomOutlinedTextField(passwordValue, "Senha", KeyboardType.Text)
-
+            CustomOutlinedTextField(nameValue, "Nome:", KeyboardType.Text)
+            CustomOutlinedTextField(nameValue, "Código:", KeyboardType.Text)
+            CustomOutlinedTextField(emailValue, "E-mail:", KeyboardType.Email)
+            CustomOutlinedTextField(passwordValue,"Senha:", KeyboardType.Text)
+            CustomOutlinedTextField(nameValue, "Confirme a senha:", KeyboardType.Text)
             Button(
                 onClick = onNavigateToLogin,
                 modifier = Modifier

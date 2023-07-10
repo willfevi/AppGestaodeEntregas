@@ -41,8 +41,8 @@ class XmlConfig {
         var value = ""
         var address = ""
         var cep=""
-        val distance = "\uD83D\uDD01"
-        val deliveryStatus = true
+        val distance = "↻"
+        val deliveryStatus = false
         var date =""
         var clientName = ""
         var phoneClient = ""
