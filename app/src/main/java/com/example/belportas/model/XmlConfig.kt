@@ -88,7 +88,11 @@ class XmlConfig {
                                         "xNome" -> clientName = readValue(parser, "xNome")
                                         "enderDest" -> {
                                             parser.require(XmlPullParser.START_TAG, null, "enderDest")
-                                            val addressBuilder = StringBuilder()
+                                            var street = ""
+                                            var number = ""
+                                            var district = ""
+                                            var city = ""
+                                            var state = ""
                                             while (parser.next() != XmlPullParser.END_TAG) {
                                                 if (parser.eventType != XmlPullParser.START_TAG) {
                                                     continue
@@ -98,19 +102,19 @@ class XmlConfig {
                                                         phoneClient = readValue(parser, "fone")
                                                     }
                                                     "xMun" -> {
-                                                        addressBuilder.append(readValue(parser, "xMun")).append(", ")
+                                                        city = readValue(parser, "xMun")
                                                     }
                                                     "UF" -> {
-                                                        addressBuilder.append(readValue(parser, "UF")).append(", ")
+                                                        state = readValue(parser, "UF")
                                                     }
                                                     "xBairro" -> {
-                                                        addressBuilder.append(readValue(parser, "xBairro")).append(", ")
+                                                        district = readValue(parser, "xBairro")
                                                     }
                                                     "xLgr" -> {
-                                                        addressBuilder.append(readValue(parser, "xLgr")).append(" ")
+                                                        street = readValue(parser, "xLgr")
                                                     }
                                                     "nro" -> {
-                                                        addressBuilder.append(readValue(parser, "nro")).append(" - ")
+                                                        number = readValue(parser, "nro")
                                                     }
                                                     "CEP" -> {
                                                         cep= readValue(parser, "CEP")
@@ -120,8 +124,7 @@ class XmlConfig {
                                                     }
                                                 }
                                             }
-                                            addressBuilder.append("- BRASIL")
-                                            address = addressBuilder.toString()
+                                            address = "$street, $number, $district, $city, $state."
                                         }
                                         else -> skip(parser)
                                     }
@@ -172,7 +175,6 @@ class XmlConfig {
             clientName
         )
     }
-
 
     @Throws(IOException::class, XmlPullParserException::class)
     private fun readValue(parser: XmlPullParser, tag: String): String {

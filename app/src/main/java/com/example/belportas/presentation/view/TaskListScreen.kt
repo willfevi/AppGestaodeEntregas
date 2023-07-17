@@ -3,13 +3,16 @@ package com.example.belportas.presentation.view
 import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.Divider
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -56,7 +59,6 @@ fun TaskListScreen(
     val searchTerm = remember { mutableStateOf(TextFieldValue("")) }
     val selectedDateMillis = remember { mutableStateOf<Long?>(null) }
     val context = LocalContext.current
-
     val tasks = taskViewModel.tasks.value.orEmpty().toList()
     val sdf = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
     val filteredTasks = tasks.filter {
@@ -71,6 +73,9 @@ fun TaskListScreen(
         topBar = {
             TopAppBar(
                 title = {
+                    IconButton(onClick = {}) {
+                    Icon(Icons.Default.Menu, contentDescription = "Menu")
+                    }
                     if (!isSearchVisible.value) {
                         Box(modifier = Modifier.fillMaxWidth(0.50f)) {
                             Image(
@@ -104,13 +109,10 @@ fun TaskListScreen(
                 },
                 actions = {
                     IconButton(onClick = { isSearchVisible.value = !isSearchVisible.value }) {
-                        Icon(Icons.Default.Search, contentDescription = "Search")
+                        Icon(Icons.Default.Search, contentDescription = "SearchNfeNumber")
                     }
                     IconButton(onClick = { showDatePicker(context, selectedDateMillis) }) {
-                        Icon(Icons.Default.DateRange, contentDescription = "Filter")
-                    }
-                    IconButton(onClick = onNavigateToBarcode) {
-                        Icon(Icons.Default.Menu, contentDescription = "Menu")
+                        Icon(Icons.Default.DateRange, contentDescription = "FilterDate")
                     }
                 }
             )
@@ -173,5 +175,12 @@ fun showDatePicker(context: Context, selectedDate: MutableState<Long?>) {
     val activity = context as? AppCompatActivity
     activity?.supportFragmentManager?.let { fragmentManager ->
         datePicker.show(fragmentManager, "DATE_PICKER")
+    }
+}
+@Composable
+fun DrawerContent() {
+    Column(modifier = Modifier.padding(16.dp)) {
+        Text(text = "Organizar Rota", Modifier.clickable {  })
+        Divider()
     }
 }

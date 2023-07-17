@@ -1,10 +1,12 @@
 package com.example.belportas.model.data
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import java.io.Serializable
 import java.util.Date
-
+@Entity
 data class Task(
-    val id: Long,
+    @PrimaryKey(autoGenerate = true) val id: Long=0,
     val noteNumber: String,
     val phoneClient:String,
     val value: String,

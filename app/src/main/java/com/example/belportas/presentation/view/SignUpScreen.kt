@@ -63,14 +63,14 @@ fun SingUp(
             Image(
                 painter = painterResource(id = R.drawable.ic_cadastro),
                 contentDescription = "Cadastro",
-                modifier = Modifier.fillMaxWidth(0.7f)
+                modifier = Modifier.fillMaxWidth(0.5f)
 
             )
             CustomOutlinedTextField(nameValue, "Nome:", KeyboardType.Text)
-            CustomOutlinedTextField(nameValue, "Código:", KeyboardType.Text)
+            CustomOutlinedTextField(codAdminValue, "Código:", KeyboardType.Text)
             CustomOutlinedTextField(emailValue, "E-mail:", KeyboardType.Email)
             CustomOutlinedTextField(passwordValue,"Senha:", KeyboardType.Text)
-            CustomOutlinedTextField(nameValue, "Confirme a senha:", KeyboardType.Text)
+            CustomOutlinedTextField(confirmPasswordValue, "Confirme a senha:", KeyboardType.Text)
             Button(
                 onClick = onNavigateToLogin,
                 modifier = Modifier

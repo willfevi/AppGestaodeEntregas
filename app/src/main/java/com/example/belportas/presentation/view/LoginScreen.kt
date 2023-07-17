@@ -68,6 +68,7 @@ fun LoginScreen(
             CustomOutlinedTextField(passwordValue, "Senha:", KeyboardType.Password)
             Button(
                 onClick = {
+                    // add logic for login
                     onLoginSuccess()
                 },
                 modifier = Modifier

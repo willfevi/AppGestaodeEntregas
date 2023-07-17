@@ -95,6 +95,10 @@ fun TaskCard(
                         text = "Número da Nota: ${task.noteNumber}",
                         fontWeight = FontWeight.Bold
                     )
+                    Text(
+                        text = "        id:${task.id} ",
+                        fontWeight = FontWeight.Bold
+                    )
                 }
                 IconButton(
                     onClick = { isDetailsVisible.value = !isDetailsVisible.value }
@@ -161,7 +165,7 @@ fun TaskCard(
                     )
 
                     IconButton(
-                        onClick = { openExternalApps.openMap(context, task.cep) }
+                        onClick = { openExternalApps.openMap(context, task.address,task.cep) }
                     ) {
                         Icon(Icons.Filled.LocationOn,
                             contentDescription = "Open Location",

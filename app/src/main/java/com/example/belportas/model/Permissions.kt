@@ -97,7 +97,6 @@ class Permissions {
         val permissionLauncher = rememberLauncherForActivityResult(
             contract = ActivityResultContracts.RequestPermission()
         ) { isGranted ->
-            // Callback is not needed for this implementation
         }
 
         val permissionStatus = rememberPermissionStatus(permission)
