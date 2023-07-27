@@ -16,6 +16,7 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -32,18 +33,22 @@ import java.util.Date
 import java.util.Locale
 
 @Composable
-fun AddTaskScreen(
+fun EditTaskScreen(
+    taskId: Int,
     onNavigateBack: () -> Unit,
     taskViewModel: TaskViewModel
 ) {
-    val noteNumberValue = remember { mutableStateOf("") }
-    val phoneValue = remember { mutableStateOf("") }
-    val valueValue = remember { mutableStateOf("") }
-    val addressValue = remember { mutableStateOf("") }
-    val cepValue = remember { mutableStateOf("") }
-    val distanceValue = remember { mutableStateOf("↻") }
-    val deliveryStatusValue = remember { mutableStateOf(true) }
-    val clientNameValue = remember { mutableStateOf("") }
+
+    val task = taskViewModel.task.collectAsState().value
+
+    val noteNumberValue = remember { mutableStateOf(task?.noteNumber ?: "") }
+    val phoneValue = remember { mutableStateOf(task?.phoneClient ?: "") }
+    val valueValue = remember { mutableStateOf(task?.value ?: "") }
+    val addressValue = remember { mutableStateOf(task?.address ?: "") }
+    val cepValue = remember { mutableStateOf(task?.cep ?: "") }
+    val distanceValue = remember { mutableStateOf(task?.distance ?: "") }
+    val deliveryStatusValue = remember { mutableStateOf(task?.deliveryStatus ?: true) }
+    val clientNameValue = remember { mutableStateOf(task?.clientName ?: "") }
 
     Scaffold(
         topBar = {
@@ -94,7 +99,7 @@ fun AddTaskScreen(
                             && clientNameValue.value.isNotEmpty()
                             && phoneValue.value.isNotEmpty()
                         ) {
-                            val task = Task(
+                            val updatedTask = Task(
                                 noteNumber = noteNumberValue.value,
                                 value = valueValue.value,
                                 address = addressValue.value,
@@ -105,10 +110,11 @@ fun AddTaskScreen(
                                 clientName = clientNameValue.value,
                                 phoneClient = phoneValue.value
                             )
-                            taskViewModel.addTask(task)
+                            taskViewModel.updateTask(updatedTask)
+                            taskViewModel.addTask(updatedTask)
                             Toast.makeText(
                                 context,
-                                "Tarefa inserida com sucesso!",
+                                "Tarefa editada com sucesso!",
                                 Toast.LENGTH_SHORT
                             ).show()
                             onNavigateBack()
@@ -125,7 +131,7 @@ fun AddTaskScreen(
                         .fillMaxWidth(0.9f)
                         .padding(top = 16.dp)
                 ) {
-                    Text(text = "Adicionar Tarefa")
+                    Text(text = "Editar")
                 }
             }
         }

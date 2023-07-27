@@ -7,8 +7,8 @@ import android.widget.Toast
 
 class OpenExternalApps {
 
-    fun openMap(context: android.content.Context,address: String, cep: String) {
-        val encodedAddress = Uri.encode(address+" "+cep)
+    fun openMap(context: android.content.Context,address: String) {
+        val encodedAddress = Uri.encode(address)
 
         val googleMapsIntentUri = Uri.parse("google.navigation:q=$encodedAddress")
         val googleMapsIntent = Intent(Intent.ACTION_VIEW, googleMapsIntentUri)

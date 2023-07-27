@@ -1,4 +1,4 @@
-package com.example.belportas.model.data
+package com.example.belportas.data
 
 import android.content.Context
 import androidx.room.Database

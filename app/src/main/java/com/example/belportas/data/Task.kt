@@ -1,4 +1,4 @@
-package com.example.belportas.model.data
+package com.example.belportas.data
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -13,7 +13,7 @@ data class Task(
     val address: String,
     val cep: String,
     var distance :String,
-    val deliveryStatus: Boolean,
+    var deliveryStatus: Boolean,
     val date: Date?,
     val clientName: String
 ): Serializable

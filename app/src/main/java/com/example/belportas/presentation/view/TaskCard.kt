@@ -22,6 +22,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.LocationOn
@@ -42,8 +43,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.belportas.R
 import com.example.belportas.model.OpenExternalApps
-import com.example.belportas.model.data.Task
-import com.example.belportas.model.data.TaskViewModel
+import com.example.belportas.data.Task
+import com.example.belportas.model.TaskViewModel
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -51,7 +52,8 @@ import java.util.Locale
 fun TaskCard(
     task: Task,
     isDetailsVisible: MutableState<Boolean>,
-    taskViewModel: TaskViewModel
+    taskViewModel: TaskViewModel,
+    onNavigateEditTaskScreen:()->Unit
 ) {
     val context = LocalContext.current
     val userNote = remember { mutableStateOf("") }
@@ -61,6 +63,8 @@ fun TaskCard(
     val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
     val dateString = dateFormat.format(task.date)
     val openExternalApps = OpenExternalApps()
+
+    var showDialog = remember { mutableStateOf(false) }
 
     Card(
         shape = RoundedCornerShape(8.dp),
@@ -73,7 +77,8 @@ fun TaskCard(
             .clickable(
                 interactionSource = interactionSource,
                 indication = rememberRipple(bounded = false),
-                onClick = { isDetailsVisible.value = !isDetailsVisible.value }
+                onClick = { /*onNavigateEditTaskScreen()*/ }
+
             )
     ) {
         Column(
@@ -112,8 +117,31 @@ fun TaskCard(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(text = task.clientName,
-                    fontWeight = FontWeight.Bold)
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                    .fillMaxWidth(0.8f))
+                Spacer(Modifier.weight(1f))
+                IconButton(onClick = {showDialog.value = true}) {
+                    Icon(Icons.Filled.Done,
+                        contentDescription ="Entregue!",
+                        tint = colorResource(id = R.color.green_icon_wpp) )
                 }
+                if (showDialog.value) {
+                    ConfirmDialog(
+                        question = "Deseja mesmo marcar essa entrega como concluida?",
+                        onConfirm = {
+                            task.deliveryStatus=true
+                            taskViewModel.deleteTask(task)
+                            showDialog.value = false
+                        },
+                        onDismissRequest = {
+                            showDialog.value = false
+                        }
+                    )
+                }
+            }
+
+
             Row(verticalAlignment = Alignment.CenterVertically) {
 
                 IconButton(
@@ -156,7 +184,7 @@ fun TaskCard(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = task.address+task.cep,
+                        text = task.address+" "+task.cep,
                         modifier = Modifier
                             .fillMaxWidth(0.8f)
                             .fillMaxSize(0.5f),
@@ -165,7 +193,7 @@ fun TaskCard(
                     )
 
                     IconButton(
-                        onClick = { openExternalApps.openMap(context, task.address,task.cep) }
+                        onClick = { openExternalApps.openMap(context, task.address) }
                     ) {
                         Icon(Icons.Filled.LocationOn,
                             contentDescription = "Open Location",

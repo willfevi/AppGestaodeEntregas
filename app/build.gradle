@@ -50,15 +50,15 @@ android {
 }
 
 dependencies {
+
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.6.4'
+
     def room_version = "2.4.1"
 
     implementation "androidx.room:room-runtime:$room_version"
     kapt "androidx.room:room-compiler:$room_version"
-    // optional - Guava support for Room, including Optional and ListenableFuture
     implementation "androidx.room:room-guava:$room_version"
-    // optional - Test helpers
     testImplementation "androidx.room:room-testing:$room_version"
-    // optional - Paging 3 Integration
     implementation "androidx.room:room-paging:2.4.1"
 
 

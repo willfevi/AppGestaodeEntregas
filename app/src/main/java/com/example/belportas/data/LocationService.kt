@@ -1,17 +1,20 @@
-package com.example.belportas.model.data
+package com.example.belportas.data
 
+import com.google.android.gms.location.*
 import android.annotation.SuppressLint
 import android.content.Context
 import android.location.Location
 import android.os.Looper
 import android.util.Log
 import android.widget.Toast
-import com.google.android.gms.location.*
 import com.google.maps.DirectionsApi
 import com.google.maps.GeoApiContext
+import com.google.maps.errors.ZeroResultsException
 import com.google.maps.model.TravelMode
 import kotlinx.coroutines.*
-import java.util.concurrent.Semaphore
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.tasks.await
+import java.lang.Exception
 
 class LocationService(private val context: Context) {
 
@@ -57,11 +60,18 @@ class LocationService(private val context: Context) {
                             .await()
                     }
                     result.routes[0].legs[0].distance.inMeters / 1000
+                } catch (e: ZeroResultsException) {
+                    Log.e("LocationService", "No route found between origin and destination", e)
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(context, "Nenhum caminho encontrado entre origem e destino", Toast.LENGTH_SHORT).show()
+                    }
+                    0L
                 } catch (e: Exception) {
                     Log.e("LocationService", "Error calculating distance", e)
                     withContext(Dispatchers.Main) {
-                        Toast.makeText(context, "Error calculating distance", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Erro ao calcular a distância: ${e.message ?: "No error message"}", Toast.LENGTH_SHORT).show()
                     }
+                    e.printStackTrace()
                     0L
                 } finally {
                     calculateDistanceSemaphore.release()
@@ -70,4 +80,28 @@ class LocationService(private val context: Context) {
                 distanceCache[destinationAddress] = it
             }
         }
+
+    @SuppressLint("MissingPermission")
+    suspend fun getCurrentLocationAsync(): Deferred<Location> = coroutineScope {
+        val locationDeferred = CompletableDeferred<Location>()
+
+        fusedLocationProviderClient.requestLocationUpdates(
+            locationRequest,
+            object : LocationCallback() {
+                override fun onLocationResult(locationResult: LocationResult) {
+                    val lastLocation = locationResult.lastLocation
+
+                    lastLocation?.let {
+                        fusedLocationProviderClient.removeLocationUpdates(this)
+                        locationDeferred.complete(it)
+                    }
+                }
+            },
+            Looper.getMainLooper()
+        )
+
+        locationDeferred
+    }
+
+
 }

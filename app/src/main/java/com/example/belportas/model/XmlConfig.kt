@@ -1,7 +1,7 @@
 package com.example.belportas.model
 
 import android.util.Xml
-import com.example.belportas.model.data.Task
+import com.example.belportas.data.Task
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
 import java.io.IOException

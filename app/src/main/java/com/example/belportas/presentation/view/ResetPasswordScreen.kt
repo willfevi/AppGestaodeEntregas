@@ -25,7 +25,9 @@ import com.example.belportas.R
 
 
 @Composable
-fun ResetPasswordScreen(onNavigateToLogin: () -> Unit) {
+fun ResetPasswordScreen(
+    onNavigateBack: () -> Unit
+) {
     val emailValue = remember { mutableStateOf("") }
 
     Scaffold(
@@ -38,7 +40,7 @@ fun ResetPasswordScreen(onNavigateToLogin: () -> Unit) {
                     )}
                 },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateToLogin) {
+                    IconButton(onClick = onNavigateBack) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_back),
                             contentDescription = "Back"
@@ -62,7 +64,7 @@ fun ResetPasswordScreen(onNavigateToLogin: () -> Unit) {
             )
             CustomOutlinedTextField(emailValue, "E-mail", KeyboardType.Email)
             Button(
-                onClick = { /* Handle reset password */ },
+                onClick = onNavigateBack,
                 modifier = Modifier
                     .fillMaxWidth(0.8f)
                     .padding(top = 16.dp)

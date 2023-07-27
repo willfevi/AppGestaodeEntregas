@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 import com.example.belportas.R
 
 @Composable
-fun SingUp(
+fun SingUpScreen(
     onNavigateToLogin: () -> Unit,
     onNavigateBack: () -> Unit
 ) {

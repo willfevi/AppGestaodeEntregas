@@ -1,4 +1,4 @@
-package com.example.belportas.model.data
+package com.example.belportas.data
 
 import androidx.room.Dao
 import androidx.room.Delete
@@ -15,6 +15,8 @@ interface TaskDao {
 
     @Query("SELECT * FROM task")
     fun getAll(): List<Task>
+    @Query("SELECT * FROM task WHERE id = :taskId")
+    fun getTaskById(taskId: Int): Task
 
     @Delete
     fun delete(task: Task)

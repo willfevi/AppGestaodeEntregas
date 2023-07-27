@@ -1,8 +1,5 @@
 package com.example.belportas.presentation.view
 
-import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -16,8 +13,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.belportas.R
-import com.example.belportas.model.data.TaskViewModel
-import com.example.belportas.model.XmlConfig
+import com.example.belportas.model.TaskViewModel
+import com.example.belportas.model.getFilePickerLauncher
 
 @Composable
 fun FileScreen(
@@ -28,30 +25,10 @@ fun FileScreen(
     taskViewModel: TaskViewModel
 ) {
     val context = LocalContext.current
-    val xmlConfig = remember { XmlConfig() }
     val showFileError = remember { mutableStateOf(false) }
 
-    val filePickerLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        uri?.let {
-            try {
-                    context.contentResolver.openInputStream(it)?.use { inputStream ->
-                        val xmlString = inputStream.bufferedReader().use { reader -> reader.readText() }
-                        xmlString.let { xml ->
-                            val task = xmlConfig.parseXml(xml)
-                            task?.let { parsedTask ->
-                                taskViewModel.addTask(parsedTask)
-                                showFileError.value = false
-                            }
-                        }
-                    }
-                } catch (e: Exception) {
-                showFileError.value = true
-                if (showFileError.value) {
-                    Toast.makeText(context, "Arquivo incompatível! Por favor, selecione um arquivo XML.", Toast.LENGTH_SHORT).show()
-                }
-            }
-        }
-    }
+    val filePickerLauncher = getFilePickerLauncher(context, taskViewModel, showFileError)
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -87,14 +64,13 @@ fun FileScreen(
 
                 Button(
                     onClick = {
-                    try{
-                        showFileError.value = false
-                        filePickerLauncher.launch("text/xml")
-
-                    }catch (e :Exception){
-                        println(e.message)
-
-                    }},
+                        try {
+                            showFileError.value = false
+                            filePickerLauncher.launch("text/xml")
+                        } catch (e :Exception) {
+                            println(e.message)
+                        }
+                    },
                     modifier = Modifier
                         .fillMaxWidth(0.9f)
                         .height(100.dp)
@@ -107,6 +83,7 @@ fun FileScreen(
                     )
                     Text(text = "Abrir gerenciador de arquivos:", Modifier.padding(start = 10.dp))
                 }
+
 
                 Button(
                     onClick = { onNavigateToBarcode() },
