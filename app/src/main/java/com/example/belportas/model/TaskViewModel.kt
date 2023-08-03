@@ -2,11 +2,12 @@ package com.example.belportas.model
 
 import android.app.Application
 import android.location.Location
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.belportas.data.AppDatabase
+import com.example.belportas.data.BelDatabase
 import com.example.belportas.data.LocationService
 import com.example.belportas.data.Task
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -19,22 +20,29 @@ import java.util.concurrent.Semaphore
 
 class TaskViewModel(application: Application) : AndroidViewModel(application) {
     private val context = application.applicationContext
-    private val locationService = LocationService(application)
+    private val locationService = LocationService(getApplication())
     val userLocation = mutableStateOf(Location(""))
     private val calculateDistanceSemaphore = Semaphore(1)
 
     private val coroutineExceptionHandler = CoroutineExceptionHandler { _, exception ->
-        Toast.makeText(context, "Error: ${exception.message}", Toast.LENGTH_SHORT).show()
+        viewModelScope.launch(Dispatchers.Main) {
+            Toast.makeText(context, "Error: ${exception.message}", Toast.LENGTH_SHORT).show()
+        }
     }
-    private val taskDao = AppDatabase.getDatabase(application).taskDao()
+
+    private val taskDao = BelDatabase.getDatabase(application).taskDao()
 
     private val _tasks = MutableStateFlow<List<Task>>(emptyList())
     val tasks: StateFlow<List<Task>> = _tasks
 
-    private val _isRefreshing = MutableStateFlow(false)
+    val _isRefreshing = MutableStateFlow(false)
     val isRefreshing: StateFlow<Boolean> = _isRefreshing
 
     init {
+        initializeLocation()
+    }
+
+    fun initializeLocation() {
         locationService.startLocationUpdates {
             userLocation.value = it
             updateAllDistances()
@@ -44,12 +52,20 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
 
     fun addTask(task: Task) {
         viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
-            val distance = locationService.calculateDistanceAsync(userLocation.value, task.address).await().toString()
-            val taskWithDistance = task.copy(distance = distance)
-            taskDao.insert(taskWithDistance)
-            _tasks.value = taskDao.getAll()
+            val existingTask = taskDao.getAll().find { it.noteNumber == task.noteNumber }
+            if (existingTask != null) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(context, "Já existe uma tarefa com o mesmo número de nota.", Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                val distance = locationService.calculateDistanceAsync(userLocation.value, task.address).await().toString()
+                val taskWithDistance = task.copy(distance = distance)
+                taskDao.insert(taskWithDistance)
+                _tasks.value = taskDao.getAll()
+            }
         }
     }
+
     fun addTaskExternal(task: Task) {
         viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
             try {
@@ -68,10 +84,6 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
                     val taskWithDistance = task.copy(distance = distance)
                     taskDao.insert(taskWithDistance)
                     _tasks.value = taskDao.getAll()
-                } ?: run {
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(context, "Não foi possível obter a localização atual do usuário.", Toast.LENGTH_SHORT).show()
-                    }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
@@ -80,9 +92,6 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
-
-
-
 
     fun deleteTask(task: Task) {
         viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
@@ -115,6 +124,7 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
             _tasks.value = taskDao.getAll()
         }
     }
+
     fun deleteAllTasks() {
         viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
             taskDao.deleteAll()
@@ -129,15 +139,20 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
             }.sortedBy {it.distance}
         }
     }
+
     fun refreshDistancesForNull() {
         viewModelScope.launch(coroutineExceptionHandler) {
             _isRefreshing.value = true
-            _tasks.value = _tasks.value.map { task ->
-                if (task.distance == "0" || task.distance == "N/A") {
-                    task.copy(distance = calculateDistanceSafe(task, userLocation.value))
-                } else {
-                    task
+            withContext(Dispatchers.IO) {
+                val updatedTasks = taskDao.getAll().filter { it.distance == "N/A" }
+                val tasksCopy = updatedTasks.toMutableList()
+                for (i in tasksCopy.indices) {
+                    val newDistance = calculateDistanceSafe(tasksCopy[i], userLocation.value)
+                    tasksCopy[i] = tasksCopy[i].copy(distance = newDistance)
+                    Log.d("TaskViewModel", "Updated distance for task ${tasksCopy[i].id}: $newDistance")
+                    taskDao.update(tasksCopy[i])
                 }
+                _tasks.value = taskDao.getAll()
             }
             _isRefreshing.value = false
         }
@@ -149,7 +164,15 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
         } else {
             try {
                 calculateDistanceSemaphore.acquire()
-                locationService.calculateDistanceAsync(userLocation, task.address).await().toString()
+                val calculatedDistance = locationService.calculateDistanceAsync(userLocation, task.address).await().toString()
+                if (calculatedDistance != "0") {
+                    calculatedDistance
+                } else {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(context, "Erro ao calcular a distância, o endereço pode estar incorreto: ${calculatedDistance}", Toast.LENGTH_SHORT).show()
+                    }
+                    "N/A"
+                }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     Toast.makeText(context, "Erro ao calcular a distância, o endereço pode estar incorreto: ${e.message}", Toast.LENGTH_SHORT).show()

@@ -7,10 +7,14 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.ExperimentalGetImage
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.belportas.data.LocationService
+import com.example.belportas.data.Task
 import com.example.belportas.model.Permissions
 import com.example.belportas.model.TaskViewModel
 import com.example.belportas.model.handleSendXml
@@ -40,11 +44,17 @@ class MainActivity : AppCompatActivity() {
         }
 
     }
+    fun closeApp(){
+        this.finishAffinity()
+    }
     @ExperimentalGetImage
     @Composable
     fun BelPortasApp(navController: NavHostController, taskViewModel: TaskViewModel) {
+        var showDialog = remember { mutableStateOf(false) }
+        val locationService by lazy { LocationService(this.applicationContext) }
+
         BelPortasTheme {
-            NavHost(navController, startDestination = "taskList") {
+            NavHost(navController, startDestination = "permissions") {
                 composable("login") {
                     LoginScreen(
                         onNavigateToSignUp = { navController.navigate("signup") },
@@ -54,9 +64,13 @@ class MainActivity : AppCompatActivity() {
                 }
                 composable("permissions") {
                     permissions.PermissionRequestScreen(
-                        onPermissionGranted = { navController.navigate("taskList") }
+                        taskViewModel=taskViewModel,
+                        locationService = locationService,
+                        onPermissionGranted = { navController.navigate("taskList") },
+                        onPermissionDenied = { showDialog.value=true}
                     )
                 }
+
                 composable("taskList") {
                     TaskListScreen(
                         navController = navController,
@@ -106,6 +120,14 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
+        }
+        if (showDialog.value) {
+            ConfirmDialogPermissions(
+                question = "O aplicativo precisa de todas as permissões para funcionar !",
+                onConfirm = {
+                    closeApp()
+                }
+            )
         }
     }
 }

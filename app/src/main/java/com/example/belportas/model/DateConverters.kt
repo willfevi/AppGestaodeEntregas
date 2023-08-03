@@ -2,7 +2,7 @@ package com.example.belportas.model
 import androidx.room.TypeConverter
 import java.util.Date
 
-class Converters {
+class DateConverters {
     @TypeConverter
     fun fromDate(date: Date?): Long? {
         return date?.time

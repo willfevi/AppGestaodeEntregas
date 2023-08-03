@@ -42,8 +42,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.belportas.R
-import com.example.belportas.model.OpenExternalApps
+import com.example.belportas.data.DeliveryStatus
 import com.example.belportas.data.Task
+import com.example.belportas.model.OpenExternalApps
 import com.example.belportas.model.TaskViewModel
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -130,7 +131,7 @@ fun TaskCard(
                     ConfirmDialog(
                         question = "Deseja mesmo marcar essa entrega como concluida?",
                         onConfirm = {
-                            task.deliveryStatus=true
+                            task.deliveryStatus=DeliveryStatus.PEDIDO_ENTREGUE
                             taskViewModel.deleteTask(task)
                             showDialog.value = false
                         },
@@ -214,7 +215,8 @@ fun TaskCard(
                         fontWeight = FontWeight.Light
                     )
                 }
-                DefineProgress(indicator = task.deliveryStatus)
+                var indicator = task.deliveryStatus
+                DefineProgressBar(indicator)
                 Button(modifier= Modifier.fillMaxSize(0.3f),
                     onClick = { isNoteFieldVisible.value = true }
                 ) {

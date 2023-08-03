@@ -1,6 +1,7 @@
 package com.example.belportas.model
 
 import android.util.Xml
+import com.example.belportas.data.DeliveryStatus
 import com.example.belportas.data.Task
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
@@ -36,13 +37,14 @@ class XmlConfig {
         return null
     }
     @Throws(XmlPullParserException::class, IOException::class)
+
     private fun readNFe(parser: XmlPullParser): Task? {
         var noteNumber = ""
         var value = ""
         var address = ""
         var cep=""
         val distance = "↻"
-        val deliveryStatus = false
+        val deliveryStatus= DeliveryStatus.PEDIDO_EM_TRANSITO
         var date =""
         var clientName = ""
         var phoneClient = ""

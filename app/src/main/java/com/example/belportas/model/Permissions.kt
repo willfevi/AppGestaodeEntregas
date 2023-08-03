@@ -1,5 +1,4 @@
 package com.example.belportas.model
-
 import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -8,11 +7,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
+import com.example.belportas.data.LocationService
 
 class Permissions {
     @Composable
-    fun PermissionRequestScreen(onPermissionGranted: () -> Unit) {
+    fun PermissionRequestScreen(
+        taskViewModel: TaskViewModel,
+        locationService: LocationService,
+        onPermissionGranted: () -> Unit,
+        onPermissionDenied: () -> Unit
+    ) {
         val context = LocalContext.current
+
         val permissions = arrayOf(
             Manifest.permission.CAMERA,
             Manifest.permission.READ_SMS,
@@ -23,6 +29,10 @@ class Permissions {
             Manifest.permission.ACCESS_COARSE_LOCATION
         )
 
+        val fineLocationGranted = Manifest.permission.ACCESS_FINE_LOCATION.let {
+            ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
+        }
+
         val allPermissionsGranted = permissions.all {
             ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
         }
@@ -31,14 +41,33 @@ class Permissions {
             contract = ActivityResultContracts.RequestMultiplePermissions()
         ) { permissionsResult ->
             if (permissionsResult.values.all { it }) {
+                locationService.startLocationUpdates { /* Aqui vai o código para executar quando a localização for atualizada */ }
                 onPermissionGranted()
+            } else {
+                onPermissionDenied()
+            }
+        }
+
+        val backgroundLocationLauncher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.RequestPermission()
+        ) { isGranted ->
+            if (isGranted) {
+                locationService.startLocationUpdates { /* Aqui vai o código para executar quando a localização for atualizada */ }
+                onPermissionGranted()
+            } else {
+                onPermissionDenied()
             }
         }
 
         LaunchedEffect(allPermissionsGranted) {
             if (!allPermissionsGranted) {
-                launcher.launch(permissions)
+                if (fineLocationGranted) {
+                    backgroundLocationLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                } else {
+                    launcher.launch(permissions)
+                }
             } else {
+                taskViewModel.initializeLocation()
                 onPermissionGranted()
             }
         }

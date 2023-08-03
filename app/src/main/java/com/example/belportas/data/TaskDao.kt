@@ -26,4 +26,8 @@ interface TaskDao {
 
     @Query("DELETE FROM TASK")
     fun deleteAll()
+
+    @Query("SELECT * FROM task WHERE noteNumber = :noteNumber LIMIT 1")
+    fun getTaskByNoteNumber(noteNumber: String): Task?
+
 }

@@ -25,6 +25,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.belportas.R
+import com.example.belportas.data.DeliveryStatus
 import com.example.belportas.data.Task
 import com.example.belportas.model.TaskViewModel
 import java.text.SimpleDateFormat
@@ -42,7 +43,6 @@ fun AddTaskScreen(
     val addressValue = remember { mutableStateOf("") }
     val cepValue = remember { mutableStateOf("") }
     val distanceValue = remember { mutableStateOf("↻") }
-    val deliveryStatusValue = remember { mutableStateOf(true) }
     val clientNameValue = remember { mutableStateOf("") }
 
     Scaffold(
@@ -100,7 +100,7 @@ fun AddTaskScreen(
                                 address = addressValue.value,
                                 cep = cepValue.value,
                                 distance = distanceValue.value,
-                                deliveryStatus = deliveryStatusValue.value,
+                                deliveryStatus = DeliveryStatus.PEDIDO_EM_TRANSITO,
                                 date = sdf.parse(currentDate),
                                 clientName = clientNameValue.value,
                                 phoneClient = phoneValue.value

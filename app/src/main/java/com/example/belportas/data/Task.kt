@@ -13,7 +13,12 @@ data class Task(
     val address: String,
     val cep: String,
     var distance :String,
-    var deliveryStatus: Boolean,
+    var deliveryStatus: DeliveryStatus,
     val date: Date?,
     val clientName: String
 ): Serializable
+enum class DeliveryStatus {
+    PEDIDO_SEPARADO,
+    PEDIDO_EM_TRANSITO,
+    PEDIDO_ENTREGUE
+}

@@ -1,20 +1,18 @@
 package com.example.belportas.data
 
-import com.google.android.gms.location.*
 import android.annotation.SuppressLint
 import android.content.Context
 import android.location.Location
 import android.os.Looper
 import android.util.Log
 import android.widget.Toast
+import com.google.android.gms.location.*
 import com.google.maps.DirectionsApi
 import com.google.maps.GeoApiContext
 import com.google.maps.errors.ZeroResultsException
 import com.google.maps.model.TravelMode
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Semaphore
-import kotlinx.coroutines.tasks.await
-import java.lang.Exception
 
 class LocationService(private val context: Context) {
 
@@ -65,14 +63,14 @@ class LocationService(private val context: Context) {
                     withContext(Dispatchers.Main) {
                         Toast.makeText(context, "Nenhum caminho encontrado entre origem e destino", Toast.LENGTH_SHORT).show()
                     }
-                    0L
+                    Long.MAX_VALUE
                 } catch (e: Exception) {
                     Log.e("LocationService", "Error calculating distance", e)
                     withContext(Dispatchers.Main) {
                         Toast.makeText(context, "Erro ao calcular a distância: ${e.message ?: "No error message"}", Toast.LENGTH_SHORT).show()
                     }
                     e.printStackTrace()
-                    0L
+                    Long.MAX_VALUE
                 } finally {
                     calculateDistanceSemaphore.release()
                 }

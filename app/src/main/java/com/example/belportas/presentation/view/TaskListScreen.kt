@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -26,10 +25,10 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.rememberDrawerState
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -46,8 +45,6 @@ import androidx.navigation.NavHostController
 import com.example.belportas.R
 import com.example.belportas.data.Task
 import com.example.belportas.model.TaskViewModel
-import com.google.accompanist.swiperefresh.SwipeRefresh
-import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.google.android.material.datepicker.MaterialDatePicker
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -74,7 +71,7 @@ fun TaskListScreen(
         task.noteNumber.contains(searchTerm.value.text) &&
                 (selectedDateMillis.value == null || sdf.format(task.date) == sdf.format(selectedDateMillis.value))
     }
-    val isRefreshing = remember { mutableStateOf(false) }
+    val isRefreshing by taskViewModel.isRefreshing.collectAsState()
 
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -87,9 +84,8 @@ fun TaskListScreen(
         drawerContent = {
             Menu(onNavigateToBarcode,
                 onRefresh = {
-                    isRefreshing.value = true
+                    isRefreshing
                     taskViewModel.refreshDistancesForNull()
-                    isRefreshing.value = false
                 },
                 onNavigateToAddTaskScreen = onNavigateToAddTaskScreen,
                 onNavigateToFile = onNavigateToFile,
@@ -153,16 +149,6 @@ fun TaskListScreen(
                 )
             }
         ) { innerPadding ->
-            SwipeRefresh(
-                state = rememberSwipeRefreshState(isRefreshing.value),
-                onRefresh = { taskViewModel.refreshDistancesForNull() }
-            )
-            {
-                if (isRefreshing.value) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator()
-                    }
-                } else {
                     LazyColumn(
                         modifier = Modifier
                             .padding(innerPadding)
@@ -179,7 +165,6 @@ fun TaskListScreen(
                             )
                         }
                     }
-                }
             }
         }
         if (showDialog.value) {
@@ -195,7 +180,7 @@ fun TaskListScreen(
             )
         }
     }
-}
+
 fun compareByDistance(task1: Task, task2: Task): Int {
     val distance1 = task1.distance.split("km")[0].toIntOrNull() ?: 0
     val distance2 = task2.distance.split("km")[0].toIntOrNull() ?: 0
