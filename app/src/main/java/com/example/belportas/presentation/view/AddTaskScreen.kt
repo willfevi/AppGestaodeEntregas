@@ -100,7 +100,7 @@ fun AddTaskScreen(
                                 address = addressValue.value,
                                 cep = cepValue.value,
                                 distance = distanceValue.value,
-                                deliveryStatus = DeliveryStatus.PEDIDO_EM_TRANSITO,
+                                deliveryStatus = DeliveryStatus.PEDIDO_SEPARADO,
                                 date = sdf.parse(currentDate),
                                 clientName = clientNameValue.value,
                                 phoneClient = phoneValue.value

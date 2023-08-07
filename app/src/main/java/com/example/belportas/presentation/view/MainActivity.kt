@@ -14,7 +14,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.belportas.data.LocationService
-import com.example.belportas.data.Task
 import com.example.belportas.model.Permissions
 import com.example.belportas.model.TaskViewModel
 import com.example.belportas.model.handleSendXml
@@ -73,13 +72,11 @@ class MainActivity : AppCompatActivity() {
 
                 composable("taskList") {
                     TaskListScreen(
-                        navController = navController,
                         taskViewModel = taskViewModel,
                         onNavigateToBarcode = { navController.navigate("barcodeScreen") },
                         onNavigateToFile = { navController.navigate("filescreen") },
-                        onNavigateToAddTaskScreen = { navController.navigate("addtaskscreen")},
-                        onNavigateEditTaskScreen = { task -> navController.navigate("edittaskscreen/${task.id}") }
-                    )
+                        onNavigateToAddTaskScreen = { navController.navigate("addtaskscreen")}
+                    ) { task -> navController.navigate("edittaskscreen/${task.id}") }
                 }
                 composable("signup"){
                     SingUpScreen(
@@ -120,6 +117,7 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
+
         }
         if (showDialog.value) {
             ConfirmDialogPermissions(

@@ -44,7 +44,7 @@ class XmlConfig {
         var address = ""
         var cep=""
         val distance = "↻"
-        val deliveryStatus= DeliveryStatus.PEDIDO_EM_TRANSITO
+        val deliveryStatus= DeliveryStatus.PEDIDO_SEPARADO
         var date =""
         var clientName = ""
         var phoneClient = ""

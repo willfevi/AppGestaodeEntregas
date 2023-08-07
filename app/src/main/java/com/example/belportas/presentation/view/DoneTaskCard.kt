@@ -10,34 +10,25 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountBox
-import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.List
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.belportas.data.DeliveryStatus
 import com.example.belportas.data.Task
 import com.example.belportas.model.TaskViewModel
 
 @Composable
-fun AcceptTaskCard(
+fun DoneTaskCard(
     task: Task,
     taskViewModel: TaskViewModel
 ) {
-
-    val showDialog = remember { mutableStateOf(false) }
     Card(
         shape = RoundedCornerShape(8.dp),
         border = BorderStroke(0.25.dp, Color.Gray),
@@ -79,31 +70,6 @@ fun AcceptTaskCard(
                     modifier = Modifier
                         .fillMaxWidth(0.8f))
                 Spacer(Modifier.weight(1f))
-
-               IconButton(
-                   onClick = { showDialog.value=true }
-               ) {
-                   Icon(
-                    Icons.Filled.AddCircle,
-                    contentDescription = "Nota",
-                    modifier = Modifier.padding(end = 4.dp)
-                )
-               }
-                if (showDialog.value) {
-                ConfirmDialog(
-                    question = "Deseja mesmo adicionar essa entrega na rota atual?",
-                    onConfirm = {
-                        task.deliveryStatus=DeliveryStatus.PEDIDO_EM_TRANSITO
-                        taskViewModel.updateTask(task)
-                        taskViewModel.getAllTasks()
-                        showDialog.value = false
-                    },
-                    onDismissRequest = {
-                        showDialog.value = false
-                    }
-                )
-            }
-
             }
 
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -118,6 +84,6 @@ fun AcceptTaskCard(
             val indicator = task.deliveryStatus
             DefineProgressBar(indicator)
 
-            }
         }
+    }
 }

@@ -30,4 +30,8 @@ interface TaskDao {
     @Query("SELECT * FROM task WHERE noteNumber = :noteNumber LIMIT 1")
     fun getTaskByNoteNumber(noteNumber: String): Task?
 
+    @Query("SELECT * FROM task WHERE deliveryStatus = :status")
+    fun getTasksByStatus(status: DeliveryStatus): List<Task>
+
+
 }

@@ -13,14 +13,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.belportas.data.DeliveryStatus
+import com.example.belportas.model.TaskViewModel
 
 @Composable
-fun Menu(onNavigateToBarcode: () -> Unit,
-         onRefresh: () -> Unit ,
-         onNavigateToAddTaskScreen: () -> Unit,
-         onNavigateToFile: () -> Unit,
-         deleteAllTasks:()->Unit
-        ) {
+fun Menu(
+    onNavigateToBarcode: () -> Unit,
+    onRefresh: () -> Unit,
+    onNavigateToAddTaskScreen: () -> Unit,
+    onNavigateToFile: () -> Unit,
+    deleteAllTasks: () -> Unit,
+    taskViewModel: TaskViewModel
+) {
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colors.background
@@ -41,7 +45,30 @@ fun Menu(onNavigateToBarcode: () -> Unit,
                     .fillMaxSize()
                     .padding(24.dp),
             ) {
-
+                MenuItem(
+                    text = "Pedidos Separados",
+                    onClick = { taskViewModel.setSelectedStatus(DeliveryStatus.PEDIDO_SEPARADO) }
+                )
+                Divider(
+                    modifier = Modifier.padding(vertical = 12.dp),
+                    color = Color.Gray
+                )
+                MenuItem(
+                    text = "Pedidos em Trânsito",
+                    onClick = { taskViewModel.setSelectedStatus(DeliveryStatus.PEDIDO_EM_TRANSITO) }
+                )
+                Divider(
+                    modifier = Modifier.padding(vertical = 12.dp),
+                    color = Color.Gray
+                )
+                MenuItem(
+                    text = "Pedidos entregues",
+                    onClick = { taskViewModel.setSelectedStatus(DeliveryStatus.PEDIDO_ENTREGUE) }
+                )
+                Divider(
+                    modifier = Modifier.padding(vertical = 12.dp),
+                    color = Color.Gray
+                )
                 MenuItem(
                 text = "Recarregar Lista",
                 onClick = onRefresh

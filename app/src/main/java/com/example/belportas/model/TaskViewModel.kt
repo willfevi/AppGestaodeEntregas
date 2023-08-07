@@ -8,6 +8,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.belportas.data.BelDatabase
+import com.example.belportas.data.DeliveryStatus
 import com.example.belportas.data.LocationService
 import com.example.belportas.data.Task
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -109,7 +110,6 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _task = MutableStateFlow<Task?>(null)
     val task: StateFlow<Task?> = _task
-
     fun getTaskById(taskId: Int) {
         viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
             val result = taskDao.getTaskById(taskId)
@@ -121,10 +121,13 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
 
     fun getAllTasks() {
         viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
-            _tasks.value = taskDao.getAll()
+            _tasks.value = if (selectedStatus.value == DeliveryStatus.PEDIDO_EM_TRANSITO) {
+                taskDao.getAll()
+            } else {
+                taskDao.getTasksByStatus(selectedStatus.value)
+            }
         }
     }
-
     fun deleteAllTasks() {
         viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
             taskDao.deleteAll()
@@ -138,6 +141,18 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
                 task.copy(distance = calculateDistanceSafe(task, userLocation.value))
             }.sortedBy {it.distance}
         }
+    }
+
+    val selectedStatus = mutableStateOf(DeliveryStatus.PEDIDO_EM_TRANSITO)
+
+
+    fun setSelectedStatus(status: DeliveryStatus) {
+        selectedStatus.value = status
+        getAllTasks()
+    }
+
+    fun getSelectedStatus(): DeliveryStatus {
+        return selectedStatus.value
     }
 
     fun refreshDistancesForNull() {

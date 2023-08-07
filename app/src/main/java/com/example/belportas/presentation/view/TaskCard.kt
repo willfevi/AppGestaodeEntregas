@@ -13,17 +13,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Phone
@@ -37,7 +34,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -57,15 +53,13 @@ fun TaskCard(
     onNavigateEditTaskScreen:()->Unit
 ) {
     val context = LocalContext.current
-    val userNote = remember { mutableStateOf("") }
-    val isNoteFieldVisible = remember { mutableStateOf(false) }
     val interactionSource = remember { MutableInteractionSource() }
 
     val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
     val dateString = dateFormat.format(task.date)
     val openExternalApps = OpenExternalApps()
 
-    var showDialog = remember { mutableStateOf(false) }
+    val showDialog = remember { mutableStateOf(false) }
 
     Card(
         shape = RoundedCornerShape(8.dp),
@@ -125,14 +119,15 @@ fun TaskCard(
                 IconButton(onClick = {showDialog.value = true}) {
                     Icon(Icons.Filled.Done,
                         contentDescription ="Entregue!",
-                        tint = colorResource(id = R.color.green_icon_wpp) )
+                        tint= Color(0xFF2C7A30))
                 }
                 if (showDialog.value) {
                     ConfirmDialog(
                         question = "Deseja mesmo marcar essa entrega como concluida?",
                         onConfirm = {
                             task.deliveryStatus=DeliveryStatus.PEDIDO_ENTREGUE
-                            taskViewModel.deleteTask(task)
+                            taskViewModel.updateTask(task)
+                            taskViewModel.getAllTasks()
                             showDialog.value = false
                         },
                         onDismissRequest = {
@@ -150,7 +145,8 @@ fun TaskCard(
                 ) {
                     Icon(Icons.Filled.Phone,
                         contentDescription = "phone",
-                        tint = colorResource(id = R.color.blue_phone_icon))
+                        tint=Color(0xFF2196F3)
+                    )
                 }
 
                 IconButton(onClick = {
@@ -163,8 +159,9 @@ fun TaskCard(
                 { Icon(
                         painter = painterResource(id = R.drawable.ic_open_wpp),
                         contentDescription = "Whatsapp",
-                        tint = colorResource(id = R.color.green_icon_wpp)
-                    )
+                        tint = Color(0xFF2C7A30)
+                )
+
                 }
                 Text(
                     text ="    Tel:    ${task.phoneClient}",
@@ -198,8 +195,9 @@ fun TaskCard(
                     ) {
                         Icon(Icons.Filled.LocationOn,
                             contentDescription = "Open Location",
-                            tint = colorResource(id = R.color.red),
-                            modifier = Modifier.size(35.dp))
+                            modifier = Modifier.size(35.dp),
+                            tint = Color(0xFFA2150A)
+                        )
                     }
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -215,29 +213,8 @@ fun TaskCard(
                         fontWeight = FontWeight.Light
                     )
                 }
-                var indicator = task.deliveryStatus
+                val indicator = task.deliveryStatus
                 DefineProgressBar(indicator)
-                Button(modifier= Modifier.fillMaxSize(0.3f),
-                    onClick = { isNoteFieldVisible.value = true }
-                ) {
-                    Icon(Icons.Filled.Edit , contentDescription ="Observation" )
-                }
-
-                if (isNoteFieldVisible.value) {
-                    Row {
-                        TextField(
-                            modifier = Modifier.fillMaxWidth(0.8f),
-                            value = userNote.value,
-                            onValueChange = { newValue -> userNote.value = newValue },
-                            label = { Text("Digite sua observação") }
-                        )
-                        Button(
-                            onClick = { isNoteFieldVisible.value = false }
-                        ) {
-                            Text("✔️")
-                        }
-                    }
-                }
             }
         }
     }

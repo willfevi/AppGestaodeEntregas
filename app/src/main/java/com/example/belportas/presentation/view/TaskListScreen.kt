@@ -1,6 +1,7 @@
 package com.example.belportas.presentation.view
 
 import android.content.Context
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
@@ -41,8 +42,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
 import com.example.belportas.R
+import com.example.belportas.data.DeliveryStatus
 import com.example.belportas.data.Task
 import com.example.belportas.model.TaskViewModel
 import com.google.android.material.datepicker.MaterialDatePicker
@@ -53,7 +54,6 @@ import java.util.Locale
 
 @Composable
 fun TaskListScreen(
-    navController: NavHostController,
     taskViewModel: TaskViewModel,
     onNavigateToBarcode: () -> Unit,
     onNavigateToFile: () -> Unit,
@@ -66,17 +66,24 @@ fun TaskListScreen(
     val context = LocalContext.current
     val tasksStateFlow = taskViewModel.tasks.collectAsState()
     val tasks = tasksStateFlow.value
+        .filter { task -> task.deliveryStatus == DeliveryStatus.PEDIDO_EM_TRANSITO }
     val sdf = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
-    val filteredTasks = tasks.filter { task ->
-        task.noteNumber.contains(searchTerm.value.text) &&
+    val selectedStatus = taskViewModel.getSelectedStatus()
+    val filteredTasks = tasksStateFlow.value.filter { task ->
+        val matches = task.deliveryStatus == selectedStatus &&
+                task.noteNumber.contains(searchTerm.value.text) &&
                 (selectedDateMillis.value == null || sdf.format(task.date) == sdf.format(selectedDateMillis.value))
+        Log.d("Filtering", "Task: $task, Matches: $matches")
+        matches
     }
+
+
     val isRefreshing by taskViewModel.isRefreshing.collectAsState()
 
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
-    var showDialog = remember { mutableStateOf(false) }
+    val showDialog = remember { mutableStateOf(false) }
 
 
     ModalDrawer(
@@ -89,7 +96,8 @@ fun TaskListScreen(
                 },
                 onNavigateToAddTaskScreen = onNavigateToAddTaskScreen,
                 onNavigateToFile = onNavigateToFile,
-                deleteAllTasks = { showDialog.value = true})
+                deleteAllTasks = { showDialog.value = true},
+                taskViewModel = taskViewModel)
         },
     ) {
         Scaffold(
@@ -157,12 +165,30 @@ fun TaskListScreen(
                     ) {
                         itemsIndexed(filteredTasks.sortedWith(::compareByDistance)) { index, task ->
                             val isDetailsVisible = remember { mutableStateOf(false) }
-                            TaskCard(
-                                task = task,
-                                isDetailsVisible = isDetailsVisible,
-                                taskViewModel = taskViewModel,
-                                onNavigateEditTaskScreen = { onNavigateEditTaskScreen(task) }
-                            )
+                            when (task.deliveryStatus) {
+                                DeliveryStatus.PEDIDO_SEPARADO -> {
+                                    AcceptTaskCard(
+                                        task = task,
+                                        taskViewModel=taskViewModel
+                                    )
+                                }
+                                DeliveryStatus.PEDIDO_EM_TRANSITO -> {
+                                    TaskCard(
+                                        task = task,
+                                        isDetailsVisible = isDetailsVisible,
+                                        taskViewModel = taskViewModel,
+                                        onNavigateEditTaskScreen = {
+                                            onNavigateEditTaskScreen(task)
+                                        }
+                                    )
+                                }
+                                else -> {
+                                    DoneTaskCard(
+                                        task = task,
+                                        taskViewModel =taskViewModel
+                                    )
+                                }
+                            }
                         }
                     }
             }
