@@ -43,13 +43,13 @@ class MainActivity : AppCompatActivity() {
         }
 
     }
-    fun closeApp(){
+    private fun closeApp(){
         this.finishAffinity()
     }
     @ExperimentalGetImage
     @Composable
     fun BelPortasApp(navController: NavHostController, taskViewModel: TaskViewModel) {
-        var showDialog = remember { mutableStateOf(false) }
+        val showDialog = remember { mutableStateOf(false) }
         val locationService by lazy { LocationService(this.applicationContext) }
 
         BelPortasTheme {

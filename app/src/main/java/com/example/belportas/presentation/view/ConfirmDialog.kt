@@ -41,7 +41,7 @@ fun ConfirmDialogPermissions(
         text = { Text(text = question) },
         confirmButton = {
             TextButton(onClick = { onConfirm() }) {
-                Text("Reiniciar o App", color = Color.Red)
+                Text("Fechar o App", color = Color.Red)
             }
         }
     )

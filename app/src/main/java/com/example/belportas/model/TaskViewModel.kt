@@ -22,7 +22,7 @@ import java.util.concurrent.Semaphore
 class TaskViewModel(application: Application) : AndroidViewModel(application) {
     private val context = application.applicationContext
     private val locationService = LocationService(getApplication())
-    val userLocation = mutableStateOf(Location(""))
+    private val userLocation = mutableStateOf(Location(""))
     private val calculateDistanceSemaphore = Semaphore(1)
 
     private val coroutineExceptionHandler = CoroutineExceptionHandler { _, exception ->
@@ -36,7 +36,7 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
     private val _tasks = MutableStateFlow<List<Task>>(emptyList())
     val tasks: StateFlow<List<Task>> = _tasks
 
-    val _isRefreshing = MutableStateFlow(false)
+    private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing: StateFlow<Boolean> = _isRefreshing
 
     init {
@@ -71,9 +71,9 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
             try {
                 val currentLocationDeferred = locationService.getCurrentLocationAsync()
-                currentLocationDeferred.await()?.let { currentLocation ->
+                currentLocationDeferred.await().let { currentLocation ->
                     userLocation.value = currentLocation
-                    if(task.address.isNullOrEmpty()) {
+                    if(task.address.isEmpty()) {
                         withContext(Dispatchers.Main) {
                             Toast.makeText(context, "O endereço da tarefa não está definido.", Toast.LENGTH_SHORT).show()
                         }
@@ -135,7 +135,7 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun updateAllDistances() {
+    private fun updateAllDistances() {
         viewModelScope.launch(coroutineExceptionHandler) {
             _tasks.value = _tasks.value.map { task ->
                 task.copy(distance = calculateDistanceSafe(task, userLocation.value))
@@ -143,7 +143,7 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    val selectedStatus = mutableStateOf(DeliveryStatus.PEDIDO_EM_TRANSITO)
+    private val selectedStatus = mutableStateOf(DeliveryStatus.PEDIDO_EM_TRANSITO)
 
 
     fun setSelectedStatus(status: DeliveryStatus) {
@@ -178,13 +178,15 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
             task.distance
         } else {
             try {
-                calculateDistanceSemaphore.acquire()
+                withContext(Dispatchers.IO) {
+                    calculateDistanceSemaphore.acquire()
+                }
                 val calculatedDistance = locationService.calculateDistanceAsync(userLocation, task.address).await().toString()
                 if (calculatedDistance != "0") {
                     calculatedDistance
                 } else {
                     withContext(Dispatchers.Main) {
-                        Toast.makeText(context, "Erro ao calcular a distância, o endereço pode estar incorreto: ${calculatedDistance}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Erro ao calcular a distância, o endereço pode estar incorreto: $calculatedDistance", Toast.LENGTH_SHORT).show()
                     }
                     "N/A"
                 }

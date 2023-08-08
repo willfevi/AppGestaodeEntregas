@@ -26,7 +26,6 @@ fun FileScreen(
 ) {
     val context = LocalContext.current
     val showFileError = remember { mutableStateOf(false) }
-
     val filePickerLauncher = getFilePickerLauncher(context, taskViewModel, showFileError)
 
     Scaffold(

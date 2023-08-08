@@ -13,6 +13,7 @@ import com.google.maps.errors.ZeroResultsException
 import com.google.maps.model.TravelMode
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Semaphore
+import java.io.IOException
 
 class LocationService(private val context: Context) {
 
@@ -58,16 +59,22 @@ class LocationService(private val context: Context) {
                             .await()
                     }
                     result.routes[0].legs[0].distance.inMeters / 1000
+                } catch (e: IOException) {
+                    Log.e("LocationService", "Error in connection", e)
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(context, "Connection error: ${e.message ?: "No error message"}", Toast.LENGTH_SHORT).show()
+                    }
+                    -1L
                 } catch (e: ZeroResultsException) {
                     Log.e("LocationService", "No route found between origin and destination", e)
                     withContext(Dispatchers.Main) {
-                        Toast.makeText(context, "Nenhum caminho encontrado entre origem e destino", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "No route found between origin and destination", Toast.LENGTH_SHORT).show()
                     }
                     Long.MAX_VALUE
                 } catch (e: Exception) {
                     Log.e("LocationService", "Error calculating distance", e)
                     withContext(Dispatchers.Main) {
-                        Toast.makeText(context, "Erro ao calcular a distância: ${e.message ?: "No error message"}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Error calculating distance: ${e.message ?: "No error message"}", Toast.LENGTH_SHORT).show()
                     }
                     e.printStackTrace()
                     Long.MAX_VALUE

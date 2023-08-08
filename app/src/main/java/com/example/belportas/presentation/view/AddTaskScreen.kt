@@ -28,6 +28,7 @@ import com.example.belportas.R
 import com.example.belportas.data.DeliveryStatus
 import com.example.belportas.data.Task
 import com.example.belportas.model.TaskViewModel
+import com.example.belportas.model.ValidatingInputsFromTheAddTaskScreen
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -41,9 +42,12 @@ fun AddTaskScreen(
     val phoneValue = remember { mutableStateOf("") }
     val valueValue = remember { mutableStateOf("") }
     val addressValue = remember { mutableStateOf("") }
+    val cityValue = remember { mutableStateOf("") }
+    val ufValue = remember { mutableStateOf("") }
     val cepValue = remember { mutableStateOf("") }
     val distanceValue = remember { mutableStateOf("↻") }
     val clientNameValue = remember { mutableStateOf("") }
+    val validator = remember { ValidatingInputsFromTheAddTaskScreen() }
 
     Scaffold(
         topBar = {
@@ -74,12 +78,50 @@ fun AddTaskScreen(
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                CustomOutlinedTextField(noteNumberValue, "Número da Nota", KeyboardType.Number)
-                CustomOutlinedTextField(valueValue, "Valor", KeyboardType.Decimal)
+                CustomOutlinedTextField(
+                    state = noteNumberValue,
+                    label = "Número da Nota",
+                    keyboardType = KeyboardType.Number,
+                    validator = validator::isValidNoteNumber,
+                    errorMessage = "Não pode conter mais de 5 dígitos!",
+                    maxLength = 5
+                )
+
+                CustomOutlinedTextField(
+                    state = valueValue,
+                    label = "Valor",
+                    keyboardType = KeyboardType.Decimal,
+                    validator = validator::isValidValue,
+                    errorMessage = "Valor inválido!",
+                    maxLength =5
+                )
+
                 CustomOutlinedTextField(addressValue, "Endereço")
-                CustomOutlinedTextField(cepValue, "CEP", KeyboardType.Number)
+                CustomOutlinedTextField(cityValue, "Cidade")
+                CustomOutlinedTextField(
+                    state = ufValue,
+                    label = "Estado",
+                    validator = validator::isValidUF,
+                    errorMessage = "UF inválido! Use o formato 'SP', 'RJ', etc.",
+                    maxLength = 2
+                )
+                CustomOutlinedTextField(
+                    state = cepValue,
+                    label = "CEP",
+                    keyboardType = KeyboardType.Number,
+                    validator = validator::isValidCEP,
+                    errorMessage = "CEP inválido! Digite o CEP no formato 00.000-000",
+                    maxLength = 10
+                )
                 CustomOutlinedTextField(clientNameValue, "Nome do Cliente")
-                CustomOutlinedTextField(phoneValue, "Contato", KeyboardType.Phone)
+                CustomOutlinedTextField(
+                    state = phoneValue,
+                    label = "Contato",
+                    validator = validator::isValidPhoneNumber,
+                    errorMessage = "Telefone inválido! Use o formato (xx)xxxxx-xxxx",
+                    maxLength = 14
+                )
+
 
                 val context = LocalContext.current
                 Button(
@@ -90,16 +132,18 @@ fun AddTaskScreen(
                         if (noteNumberValue.value.isNotEmpty()
                             && valueValue.value.isNotEmpty()
                             && addressValue.value.isNotEmpty()
+                            && cityValue.value.isNotEmpty()
+                            && ufValue.value.isNotEmpty()
                             && cepValue.value.isNotEmpty()
                             && clientNameValue.value.isNotEmpty()
                             && phoneValue.value.isNotEmpty()
                         ) {
                             val task = Task(
                                 noteNumber = noteNumberValue.value,
-                                value = valueValue.value,
-                                address = addressValue.value,
+                                value = valueValue.value + ",00",
+                                address =" "+addressValue.value+" ,"+cityValue.value+" ,"+ufValue.value,
                                 cep = cepValue.value,
-                                distance = distanceValue.value,
+                                distance =distanceValue.value,
                                 deliveryStatus = DeliveryStatus.PEDIDO_SEPARADO,
                                 date = sdf.parse(currentDate),
                                 clientName = clientNameValue.value,

@@ -1,20 +1,29 @@
 package com.example.belportas.presentation.view
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.belportas.R
 import com.example.belportas.data.DeliveryStatus
 import com.example.belportas.model.TaskViewModel
+import com.example.belportas.model.getFilePickerLauncher
 
 @Composable
 fun Menu(
@@ -25,6 +34,10 @@ fun Menu(
     deleteAllTasks: () -> Unit,
     taskViewModel: TaskViewModel
 ) {
+    val context = LocalContext.current
+    val showFileError = remember { mutableStateOf(false) }
+    val filePickerLauncher = getFilePickerLauncher(context, taskViewModel, showFileError)
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colors.background
@@ -33,7 +46,15 @@ fun Menu(
             modifier = Modifier.fillMaxSize(),
         ) {
             TopAppBar(
-                title = { Text("Menu") },
+                title = {
+                    Box(modifier = Modifier.fillMaxWidth(0.40f)) {
+                        Image(
+                            painter = painterResource(id = R.drawable.icon_belportas_topbar),
+                            contentDescription = "App top bar logo "
+                        )
+                    }
+                    Text(text = "   Menu")
+                },
                 backgroundColor = MaterialTheme.colors.primary,
                 contentColor = MaterialTheme.colors.onPrimary,
                 actions = {
@@ -95,7 +116,14 @@ fun Menu(
                 )
                 MenuItem(
                     text = "Ir para arquivos",
-                    onClick = onNavigateToFile
+                    onClick = {
+                        try {
+                            showFileError.value = false
+                            filePickerLauncher.launch("text/xml")
+                        } catch (e :Exception) {
+                            println(e.message)
+                        }
+                    }
                 )
                 Divider(
                     modifier = Modifier.padding(vertical = 12.dp),
