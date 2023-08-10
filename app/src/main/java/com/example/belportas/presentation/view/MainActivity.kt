@@ -41,8 +41,8 @@ class MainActivity : AppCompatActivity() {
             setIntent(it)
             handleSendXml(this, it, taskViewModel)
         }
-
     }
+
     private fun closeApp(){
         this.finishAffinity()
     }
