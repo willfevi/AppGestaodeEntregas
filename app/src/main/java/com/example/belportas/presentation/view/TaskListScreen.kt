@@ -33,6 +33,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -165,30 +166,7 @@ fun TaskListScreen(
                     ) {
                         itemsIndexed(filteredTasks.sortedWith(::compareByDistance)) { index, task ->
                             val isDetailsVisible = remember { mutableStateOf(false) }
-                            when (task.deliveryStatus) {
-                                DeliveryStatus.PEDIDO_SEPARADO -> {
-                                    AcceptTaskCard(
-                                        task = task,
-                                        taskViewModel=taskViewModel
-                                    )
-                                }
-                                DeliveryStatus.PEDIDO_EM_TRANSITO -> {
-                                    TaskCard(
-                                        task = task,
-                                        isDetailsVisible = isDetailsVisible,
-                                        taskViewModel = taskViewModel,
-                                        onNavigateEditTaskScreen = {
-                                            onNavigateEditTaskScreen(task)
-                                        }
-                                    )
-                                }
-                                else -> {
-                                    DoneTaskCard(
-                                        task = task,
-                                        taskViewModel =taskViewModel
-                                    )
-                                }
-                            }
+                            DynamicTaskCard(task, isDetailsVisible, taskViewModel, onNavigateEditTaskScreen)
                         }
                     }
             }
@@ -232,3 +210,19 @@ fun showDatePicker(context: Context, selectedDate: MutableState<Long?>) {
     }
 }
 
+@Composable
+fun DynamicTaskCard(
+    task: Task,
+    isDetailsVisible: MutableState<Boolean>,
+    taskViewModel: TaskViewModel,
+    onNavigateEditTaskScreen: (Task) -> Unit
+) {
+    val updatedTaskState by rememberUpdatedState(task)
+
+    when (updatedTaskState.deliveryStatus) {
+        DeliveryStatus.PEDIDO_SEPARADO -> { AcceptTaskCard(updatedTaskState,taskViewModel) }
+        DeliveryStatus.PEDIDO_EM_TRANSITO -> { TaskCard(updatedTaskState, isDetailsVisible,
+            taskViewModel) { onNavigateEditTaskScreen(updatedTaskState) }}
+        else -> { DoneTaskCard(updatedTaskState,taskViewModel)}
+    }
+}

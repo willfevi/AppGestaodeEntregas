@@ -90,22 +90,22 @@ fun Menu(
                     modifier = Modifier.padding(vertical = 12.dp),
                     color = Color.Gray
                 )
-                MenuItem(
-                text = "Recarregar Lista",
-                onClick = onRefresh
-                )
-                Divider(
-                    modifier = Modifier.padding(vertical = 12.dp),
-                    color = Color.Gray
-                )
-                MenuItem(
-                    text = "Abrir Scanner",
-                    onClick = onNavigateToBarcode
-                )
-                Divider(
-                    modifier = Modifier.padding(vertical = 12.dp),
-                    color = Color.Gray
-                )
+//                MenuItem(
+//                text = "Recarregar Lista",
+//                onClick = onRefresh
+//                )
+//                Divider(
+//                    modifier = Modifier.padding(vertical = 12.dp),
+//                    color = Color.Gray
+//                )
+//                MenuItem(
+//                    text = "Abrir Scanner",
+//                    onClick = onNavigateToBarcode
+//                )
+//                Divider(
+//                    modifier = Modifier.padding(vertical = 12.dp),
+//                    color = Color.Gray
+//                )
                 MenuItem(
                     text = "Digitar Entrega",
                     onClick = onNavigateToAddTaskScreen
