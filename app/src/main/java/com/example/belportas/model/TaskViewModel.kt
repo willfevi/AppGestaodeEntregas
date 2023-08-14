@@ -2,7 +2,6 @@ package com.example.belportas.model
 
 import android.app.Application
 import android.location.Location
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
@@ -17,17 +16,21 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.lang.ref.WeakReference
 import java.util.concurrent.Semaphore
 
 class TaskViewModel(application: Application) : AndroidViewModel(application) {
-    private val context = application.applicationContext
+    private val contextReference = WeakReference(application.applicationContext)
+
     private val locationService = LocationService(getApplication())
     private val userLocation = mutableStateOf(Location(""))
     private val calculateDistanceSemaphore = Semaphore(1)
 
     private val coroutineExceptionHandler = CoroutineExceptionHandler { _, exception ->
         viewModelScope.launch(Dispatchers.Main) {
-            Toast.makeText(context, "Error: ${exception.message}", Toast.LENGTH_SHORT).show()
+            contextReference.get()?.let {
+                Toast.makeText(it, "Error: ${exception.message}", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -35,9 +38,6 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _tasks = MutableStateFlow<List<Task>>(emptyList())
     val tasks: StateFlow<List<Task>> = _tasks
-
-    private val _isRefreshing = MutableStateFlow(false)
-    val isRefreshing: StateFlow<Boolean> = _isRefreshing
 
     init {
         initializeLocation()
@@ -50,56 +50,87 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
         }
         getAllTasks()
     }
-
     fun addTask(task: Task) {
         viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
-            val existingTask = taskDao.getAll().find { it.noteNumber == task.noteNumber }
-            if (existingTask != null) {
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(context, "Já existe uma tarefa com o mesmo número de nota.", Toast.LENGTH_SHORT).show()
+            try {
+                val existingTask = taskDao.getAll().find { it.noteNumber == task.noteNumber }
+                if (existingTask != null) {
+                    showToastMessage("Já existe uma tarefa ${task.noteNumber} com esse mesmo número de nota.")
+                    return@launch
                 }
-            } else {
-                val distance = locationService.calculateDistanceAsync(userLocation.value, task.address).await().toString()
-                val taskWithDistance = task.copy(distance = distance)
+
+                val distance = locationService.calculateDistanceAsync(userLocation.value, task.address, task.noteNumber).await()
+
+                if (distance <= 0 || distance == Long.MAX_VALUE) {
+                    showToastMessage("Erro ao calcular a distância, tarefa não adicionada.")
+                    return@launch
+                }
+
+                val taskWithDistance = task.copy(distance = distance.toString())
                 taskDao.insert(taskWithDistance)
                 _tasks.value = taskDao.getAll()
+                showToastMessage("Tarefa ${task.noteNumber} adicionada com sucesso à lista.")
+            } catch (e: Exception) {
+                showToastMessage("Erro ao adicionar tarefa: ${e.message}")
             }
         }
     }
+    private fun showToastMessage(message: String) {
+        viewModelScope.launch(Dispatchers.Main) {
+            contextReference.get()?.let {
+                Toast.makeText(it, message, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+    fun getTaskById(taskId: Int) {
+        viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
+            try {
+                val result = taskDao.getTaskById(taskId)
+                withContext(Dispatchers.Main) {
+                    _task.value = result
+                }
+            } catch (e: Exception) {
+                showToastMessage("Erro ao buscar tarefa por ID: ${e.message}")
+            }
+        }
+    }
+
+
 
     fun addTaskExternal(task: Task) {
         viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
             try {
-                val currentLocationDeferred = locationService.getCurrentLocationAsync()
-                currentLocationDeferred.await().let { currentLocation ->
-                    userLocation.value = currentLocation
-                    if(task.address.isEmpty()) {
-                        withContext(Dispatchers.Main) {
-                            Toast.makeText(context, "O endereço da tarefa não está definido.", Toast.LENGTH_SHORT).show()
-                        }
-                        return@launch
-                    }
+                val existingTask = taskDao.getAll().find { it.noteNumber == task.noteNumber }
+                if (existingTask != null) {
+                    showToastMessage("Já existe uma tarefa ${task.noteNumber} com esse mesmo número de nota.")
+                    return@launch
+                }
 
-                    val distance = locationService.calculateDistanceAsync(userLocation.value, task.address).await().toString()
+                val currentLocation = locationService.getCurrentLocationAsync().await()
+                userLocation.value = currentLocation
 
-                    val taskWithDistance = task.copy(distance = distance)
+                if (task.address.isEmpty()) {
+                    showToastMessage("O endereço da tarefa não está definido.")
+                    return@launch
+                }
+
+                val distance = locationService.calculateDistanceAsync(userLocation.value, task.address, task.noteNumber).await()
+
+                if (distance > 0 && distance != Long.MAX_VALUE) {
+                    val taskWithDistance = task.copy(distance = distance.toString())
                     taskDao.insert(taskWithDistance)
                     _tasks.value = taskDao.getAll()
+                    showToastMessage("Tarefa ${task.noteNumber} adicionada com sucesso à lista.")
+                } else {
+                    showToastMessage("Erro ao calcular a distância, tarefa não adicionada.")
                 }
             } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(context, "Erro ao adicionar tarefa: ${e.message}", Toast.LENGTH_SHORT).show()
-                }
+                showToastMessage("Erro ao adicionar tarefa: ${e.message}")
             }
         }
     }
 
-    fun deleteTask(task: Task) {
-        viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
-            taskDao.delete(task)
-            _tasks.value = taskDao.getAll()
-        }
-    }
+
 
     fun updateTask(task: Task) {
         viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
@@ -110,14 +141,6 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _task = MutableStateFlow<Task?>(null)
     val task: StateFlow<Task?> = _task
-    fun getTaskById(taskId: Int) {
-        viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
-            val result = taskDao.getTaskById(taskId)
-            withContext(Dispatchers.Main) {
-                _task.value = result
-            }
-        }
-    }
 
     fun getAllTasks() {
         viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
@@ -128,9 +151,30 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
+
     fun deleteAllTasks() {
         viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
             taskDao.deleteAll()
+            _tasks.value = taskDao.getAll()
+        }
+    }
+    fun markAllAsDelivered() {
+        viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
+            val tasksToUpdate = taskDao.getAll().filter { it.deliveryStatus == DeliveryStatus.PEDIDO_EM_TRANSITO}
+            tasksToUpdate.forEach {
+                it.deliveryStatus = DeliveryStatus.PEDIDO_ENTREGUE
+                taskDao.update(it)
+            }
+            _tasks.value = taskDao.getAll()
+        }
+    }
+    fun makeRoute() {
+        viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
+            val tasksToUpdate = taskDao.getAll().filter { it.deliveryStatus == DeliveryStatus.PEDIDO_SEPARADO}
+            tasksToUpdate.forEach {
+                it.deliveryStatus = DeliveryStatus.PEDIDO_EM_TRANSITO
+                taskDao.update(it)
+            }
             _tasks.value = taskDao.getAll()
         }
     }
@@ -145,7 +189,6 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
 
     private val selectedStatus = mutableStateOf(DeliveryStatus.PEDIDO_EM_TRANSITO)
 
-
     fun setSelectedStatus(status: DeliveryStatus) {
         selectedStatus.value = status
         getAllTasks()
@@ -153,24 +196,6 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
 
     fun getSelectedStatus(): DeliveryStatus {
         return selectedStatus.value
-    }
-
-    fun refreshDistancesForNull() {
-        viewModelScope.launch(coroutineExceptionHandler) {
-            _isRefreshing.value = true
-            withContext(Dispatchers.IO) {
-                val updatedTasks = taskDao.getAll().filter { it.distance == "N/A" }
-                val tasksCopy = updatedTasks.toMutableList()
-                for (i in tasksCopy.indices) {
-                    val newDistance = calculateDistanceSafe(tasksCopy[i], userLocation.value)
-                    tasksCopy[i] = tasksCopy[i].copy(distance = newDistance)
-                    Log.d("TaskViewModel", "Updated distance for task ${tasksCopy[i].id}: $newDistance")
-                    taskDao.update(tasksCopy[i])
-                }
-                _tasks.value = taskDao.getAll()
-            }
-            _isRefreshing.value = false
-        }
     }
 
     private suspend fun calculateDistanceSafe(task: Task, userLocation: Location): String {
@@ -181,23 +206,21 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
                 withContext(Dispatchers.IO) {
                     calculateDistanceSemaphore.acquire()
                 }
-                val calculatedDistance = locationService.calculateDistanceAsync(userLocation, task.address).await().toString()
+                val calculatedDistance = locationService.calculateDistanceAsync(userLocation, task.address, task.noteNumber).await().toString()
+
                 if (calculatedDistance != "0") {
                     calculatedDistance
                 } else {
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(context, "Erro ao calcular a distância, o endereço pode estar incorreto: $calculatedDistance", Toast.LENGTH_SHORT).show()
-                    }
+                    showToastMessage("Erro ao calcular a distância, o endereço pode estar incorreto: $calculatedDistance")
                     "N/A"
                 }
             } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(context, "Erro ao calcular a distância, o endereço pode estar incorreto: ${e.message}", Toast.LENGTH_SHORT).show()
-                }
+                showToastMessage("Erro ao calcular a distância, o endereço pode estar incorreto: ${e.message}")
                 "N/A"
             } finally {
                 calculateDistanceSemaphore.release()
             }
         }
     }
+
 }

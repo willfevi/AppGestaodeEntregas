@@ -1,4 +1,5 @@
 package com.example.belportas.presentation.view
+
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -14,9 +15,7 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.List
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -36,8 +35,8 @@ fun AcceptTaskCard(
     task: Task,
     taskViewModel: TaskViewModel
 ) {
-
     val showDialog = remember { mutableStateOf(false) }
+
     Card(
         shape = RoundedCornerShape(8.dp),
         border = BorderStroke(0.25.dp, Color.Gray),
@@ -74,26 +73,29 @@ fun AcceptTaskCard(
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(text = task.clientName,
+                Text(
+                    text = task.clientName,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier
-                        .fillMaxWidth(0.8f))
+                    modifier = Modifier.fillMaxWidth(0.8f)
+                )
                 Spacer(Modifier.weight(1f))
 
-               IconButton(
-                   onClick = { showDialog.value=true }
-               ) {
-                   Icon(
-                    Icons.Filled.AddCircle,
-                    contentDescription = "Nota",
-                    modifier = Modifier.padding(end = 4.dp)
-                )
-               }
-                if (showDialog.value) {
+                IconButton(
+                    onClick = { showDialog.value = true }
+                ) {
+                    Icon(
+                        Icons.Filled.AddCircle,
+                        contentDescription = "Nota",
+                        modifier = Modifier.padding(end = 4.dp)
+                    )
+                }
+            }
+
+            if (showDialog.value) {
                 ConfirmDialog(
                     question = "Deseja mesmo adicionar essa entrega na rota atual?",
                     onConfirm = {
-                        task.deliveryStatus=DeliveryStatus.PEDIDO_EM_TRANSITO
+                        task.deliveryStatus = DeliveryStatus.PEDIDO_EM_TRANSITO
                         taskViewModel.updateTask(task)
                         taskViewModel.getAllTasks()
                         showDialog.value = false
@@ -104,20 +106,15 @@ fun AcceptTaskCard(
                 )
             }
 
-            }
-
             Row(verticalAlignment = Alignment.CenterVertically) {
-
                 Text(
-                    text ="    Tel:    ${task.phoneClient}",
-                    fontWeight=FontWeight.Light,
-                    style =MaterialTheme.typography.subtitle1)
-
-
+                    text = "Tel: ${task.phoneClient}",
+                    fontWeight = FontWeight.Light,
+                    style = MaterialTheme.typography.subtitle1
+                )
             }
             val indicator = task.deliveryStatus
             DefineProgressBar(indicator)
-
-            }
         }
+    }
 }

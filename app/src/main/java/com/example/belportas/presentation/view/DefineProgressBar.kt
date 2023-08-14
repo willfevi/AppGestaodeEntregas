@@ -33,13 +33,13 @@ fun DefineProgressBar(deliveryStatus: DeliveryStatus) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 16.dp),
-        contentAlignment = Alignment.CenterStart // Aligning content to start
+            .padding(vertical = 4.dp),
+        contentAlignment = Alignment.CenterStart
     ) {
         Row(
             Modifier
                 .widthIn(max = 200.dp),
-            horizontalArrangement = Arrangement.Start, // Start arrangement from start
+            horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically
         ) {
             val progress = when (deliveryStatus) {

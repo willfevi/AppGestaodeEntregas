@@ -22,12 +22,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.belportas.data.Task
-import com.example.belportas.model.TaskViewModel
 
 @Composable
 fun DoneTaskCard(
-    task: Task,
-    taskViewModel: TaskViewModel
+    task: Task
 ) {
     Card(
         shape = RoundedCornerShape(8.dp),

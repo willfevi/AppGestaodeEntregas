@@ -28,8 +28,6 @@ fun ConfirmDialog(
         }
     )
 }
-
-
 @Composable
 fun ConfirmDialogPermissions(
     question: String,

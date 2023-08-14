@@ -29,11 +29,9 @@ import androidx.compose.material.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -66,38 +64,33 @@ fun TaskListScreen(
     val selectedDateMillis = remember { mutableStateOf<Long?>(null) }
     val context = LocalContext.current
     val tasksStateFlow = taskViewModel.tasks.collectAsState()
-    val tasks = tasksStateFlow.value
+    tasksStateFlow.value
         .filter { task -> task.deliveryStatus == DeliveryStatus.PEDIDO_EM_TRANSITO }
     val sdf = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
     val selectedStatus = taskViewModel.getSelectedStatus()
     val filteredTasks = tasksStateFlow.value.filter { task ->
         val matches = task.deliveryStatus == selectedStatus &&
                 task.noteNumber.contains(searchTerm.value.text) &&
-                (selectedDateMillis.value == null || sdf.format(task.date) == sdf.format(selectedDateMillis.value))
+                (selectedDateMillis.value == null || task.date?.let { sdf.format(it) } == sdf.format(selectedDateMillis.value))
         Log.d("Filtering", "Task: $task, Matches: $matches")
         matches
     }
 
-
-    val isRefreshing by taskViewModel.isRefreshing.collectAsState()
-
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
-    val showDialog = remember { mutableStateOf(false) }
+    val showDialogMarkDelivered = remember { mutableStateOf(false) }
+    val showDialogMakeRoute = remember { mutableStateOf(false) }
 
 
     ModalDrawer(
         drawerState = drawerState,
         drawerContent = {
-            Menu(onNavigateToBarcode,
-                onRefresh = {
-                    isRefreshing
-                    taskViewModel.refreshDistancesForNull()
-                },
+            Menu(onNavigateToBarcode=onNavigateToBarcode,
+                onRefresh = { taskViewModel.getAllTasks() },
                 onNavigateToAddTaskScreen = onNavigateToAddTaskScreen,
-                onNavigateToFile = onNavigateToFile,
-                deleteAllTasks = { showDialog.value = true},
+                createRoute ={showDialogMakeRoute.value=true} ,
+                markAllTasks = { showDialogMarkDelivered.value = true},
                 taskViewModel = taskViewModel)
         },
     ) {
@@ -164,22 +157,34 @@ fun TaskListScreen(
                             .padding(top = 8.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        itemsIndexed(filteredTasks.sortedWith(::compareByDistance)) { index, task ->
+                        itemsIndexed(filteredTasks.sortedWith(::compareByDistance)) { _, task ->
                             val isDetailsVisible = remember { mutableStateOf(false) }
                             DynamicTaskCard(task, isDetailsVisible, taskViewModel, onNavigateEditTaskScreen)
                         }
                     }
             }
         }
-        if (showDialog.value) {
+        if (showDialogMarkDelivered.value) {
             ConfirmDialog(
-                question = "Deseja mesmo limpar todas as tarefas ?",
+                question = "Deseja mesmo marcar todas as tarefas como entregue ?",
                 onConfirm = {
-                    taskViewModel.deleteAllTasks()
-                    showDialog.value = false
+                    taskViewModel.markAllAsDelivered()
+                    showDialogMarkDelivered.value = false
                 },
                 onDismissRequest = {
-                    showDialog.value = false
+                    showDialogMarkDelivered.value = false
+                }
+            )
+        }
+        if (showDialogMakeRoute.value) {
+            ConfirmDialog(
+                question = "Deseja mesmo adicionar todas as tarefas separadas em sua rota ?",
+                onConfirm = {
+                    taskViewModel.makeRoute()
+                    showDialogMakeRoute.value = false
+                },
+                onDismissRequest = {
+                    showDialogMakeRoute.value = false
                 }
             )
         }
@@ -210,19 +215,3 @@ fun showDatePicker(context: Context, selectedDate: MutableState<Long?>) {
     }
 }
 
-@Composable
-fun DynamicTaskCard(
-    task: Task,
-    isDetailsVisible: MutableState<Boolean>,
-    taskViewModel: TaskViewModel,
-    onNavigateEditTaskScreen: (Task) -> Unit
-) {
-    val updatedTaskState by rememberUpdatedState(task)
-
-    when (updatedTaskState.deliveryStatus) {
-        DeliveryStatus.PEDIDO_SEPARADO -> { AcceptTaskCard(updatedTaskState,taskViewModel) }
-        DeliveryStatus.PEDIDO_EM_TRANSITO -> { TaskCard(updatedTaskState, isDetailsVisible,
-            taskViewModel) { onNavigateEditTaskScreen(updatedTaskState) }}
-        else -> { DoneTaskCard(updatedTaskState,taskViewModel)}
-    }
-}

@@ -15,6 +15,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Semaphore
 import java.io.IOException
 
+@Suppress("DEPRECATION")
 class LocationService(private val context: Context) {
 
     private val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
@@ -45,8 +46,7 @@ class LocationService(private val context: Context) {
             Looper.getMainLooper()
         )
     }
-
-    suspend fun calculateDistanceAsync(origin: Location, destinationAddress: String): Deferred<Long> =
+    suspend fun calculateDistanceAsync(origin: Location, destinationAddress: String, numberNote:String): Deferred<Long> =
         coroutineScope {
             distanceCache[destinationAddress] ?: async {
                 calculateDistanceSemaphore.acquire()
@@ -58,11 +58,13 @@ class LocationService(private val context: Context) {
                             .destination(destinationAddress)
                             .await()
                     }
-                    result.routes[0].legs[0].distance.inMeters / 1000
+                    val distance = result.routes[0].legs[0].distance.inMeters / 1000
+                    distance
                 } catch (e: IOException) {
                     Log.e("LocationService", "Error in connection", e)
                     withContext(Dispatchers.Main) {
-                        Toast.makeText(context, "Connection error: ${e.message ?: "No error message"}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Tarefa $numberNote não adicionada por erro de conexão, tente novamente com acesso a internet !" , Toast.LENGTH_SHORT).show()
+                        Log.e("Connection error:", e.message ?: "No error message")
                     }
                     -1L
                 } catch (e: ZeroResultsException) {
@@ -81,8 +83,10 @@ class LocationService(private val context: Context) {
                 } finally {
                     calculateDistanceSemaphore.release()
                 }
-            }.also {
-                distanceCache[destinationAddress] = it
+            }.also { deferredResult ->
+                if (deferredResult.await() > 0 && deferredResult.await() != Long.MAX_VALUE) {
+                    distanceCache[destinationAddress] = deferredResult
+                }
             }
         }
 
@@ -107,6 +111,4 @@ class LocationService(private val context: Context) {
 
         locationDeferred
     }
-
-
 }
