@@ -56,8 +56,7 @@ fun TaskListScreen(
     taskViewModel: TaskViewModel,
     onNavigateToBarcode: () -> Unit,
     onNavigateToFile: () -> Unit,
-    onNavigateToAddTaskScreen: () -> Unit,
-    onNavigateEditTaskScreen: (Task) -> Unit
+    onNavigateToAddTaskScreen: () -> Unit
 ) {
     val isSearchVisible = remember { mutableStateOf(false) }
     val searchTerm = remember { mutableStateOf(TextFieldValue("")) }
@@ -91,7 +90,13 @@ fun TaskListScreen(
                 onNavigateToAddTaskScreen = onNavigateToAddTaskScreen,
                 createRoute ={showDialogMakeRoute.value=true} ,
                 markAllTasks = { showDialogMarkDelivered.value = true},
-                taskViewModel = taskViewModel)
+                taskViewModel = taskViewModel,
+                closeDrawerState ={
+                    scope.launch {
+                        drawerState.close()
+                    }
+                }
+            )
         },
     ) {
         Scaffold(
@@ -151,50 +156,56 @@ fun TaskListScreen(
                 )
             }
         ) { innerPadding ->
-                    LazyColumn(
-                        modifier = Modifier
-                            .padding(innerPadding)
-                            .padding(top = 8.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        itemsIndexed(filteredTasks.sortedWith(::compareByDistance)) { _, task ->
-                            val isDetailsVisible = remember { mutableStateOf(false) }
-                            DynamicTaskCard(task, isDetailsVisible, taskViewModel, onNavigateEditTaskScreen)
-                        }
-                    }
+            LazyColumn(
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .padding(top = 8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                itemsIndexed(filteredTasks.sortedWith(::compareByDistanceThenName)) { _, task ->
+                    val isDetailsVisible = remember { mutableStateOf(false) }
+                    DynamicTaskCard(task, isDetailsVisible, taskViewModel)
+                }
             }
         }
-        if (showDialogMarkDelivered.value) {
-            ConfirmDialog(
-                question = "Deseja mesmo marcar todas as tarefas como entregue ?",
-                onConfirm = {
-                    taskViewModel.markAllAsDelivered()
-                    showDialogMarkDelivered.value = false
-                },
-                onDismissRequest = {
-                    showDialogMarkDelivered.value = false
-                }
-            )
-        }
-        if (showDialogMakeRoute.value) {
-            ConfirmDialog(
-                question = "Deseja mesmo adicionar todas as tarefas separadas em sua rota ?",
-                onConfirm = {
-                    taskViewModel.makeRoute()
-                    showDialogMakeRoute.value = false
-                },
-                onDismissRequest = {
-                    showDialogMakeRoute.value = false
-                }
-            )
-        }
     }
-
-fun compareByDistance(task1: Task, task2: Task): Int {
+    if (showDialogMarkDelivered.value) {
+        ConfirmDialog(
+            question = "Deseja mesmo marcar todas as tarefas como entregue ?",
+            onConfirm = {
+                taskViewModel.markAllAsDelivered()
+                showDialogMarkDelivered.value = false
+            },
+            onDismissRequest = {
+                showDialogMarkDelivered.value = false
+            }
+        )
+    }
+    if (showDialogMakeRoute.value) {
+        ConfirmDialog(
+            question = "Deseja mesmo adicionar todas as tarefas separadas em sua rota ?",
+            onConfirm = {
+                taskViewModel.makeRoute()
+                showDialogMakeRoute.value = false
+            },
+            onDismissRequest = {
+                showDialogMakeRoute.value = false
+            }
+        )
+    }
+}
+fun compareByDistanceThenName(task1: Task, task2: Task): Int {
     val distance1 = task1.distance.split("km")[0].toIntOrNull() ?: 0
     val distance2 = task2.distance.split("km")[0].toIntOrNull() ?: 0
-    return distance1.compareTo(distance2)
+    val distanceComparison = distance1.compareTo(distance2)
+
+    return if (distanceComparison == 0) {
+        task1.clientName.compareTo(task2.clientName)
+    } else {
+        distanceComparison
+    }
 }
+
 
 fun showDatePicker(context: Context, selectedDate: MutableState<Long?>) {
     val datePicker =
