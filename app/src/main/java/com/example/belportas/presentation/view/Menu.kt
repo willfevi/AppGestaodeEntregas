@@ -56,7 +56,8 @@ fun Menu(
     onNavigateToAddTaskScreen: () -> Unit,
     createRoute: () -> Unit,
     markAllTasks: () -> Unit,
-    taskViewModel: TaskViewModel
+    taskViewModel: TaskViewModel,
+    closeDrawerState:() -> Unit
 ) {
     val context = LocalContext.current
     val showFileError = remember { mutableStateOf(false) }
@@ -88,37 +89,55 @@ fun Menu(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(24.dp)
-                    .verticalScroll(rememberScrollState()),
+                    .verticalScroll(rememberScrollState())
             ) {
                 MenuItem(
                     text = "Pedidos Separados",
                     icon = Icons.Filled.Star,
-                    onClick = { taskViewModel.setSelectedStatus(DeliveryStatus.PEDIDO_SEPARADO) }
+                    onClick = {
+                        taskViewModel.setSelectedStatus(DeliveryStatus.PEDIDO_SEPARADO)
+                        closeDrawerState()
+                    }
                 )
                 MenuItem(
                     text = "Pedidos em Trânsito",
                     icon = Icons.Filled.Send,
-                    onClick = { taskViewModel.setSelectedStatus(DeliveryStatus.PEDIDO_EM_TRANSITO) }
+                    onClick = {
+                        taskViewModel.setSelectedStatus(DeliveryStatus.PEDIDO_EM_TRANSITO)
+                        closeDrawerState()
+                    }
                 )
                 MenuItem(
                     text = "Pedidos entregues",
                     icon = Icons.Filled.CheckCircle,
-                    onClick = { taskViewModel.setSelectedStatus(DeliveryStatus.PEDIDO_ENTREGUE) }
+                    onClick = {
+                        taskViewModel.setSelectedStatus(DeliveryStatus.PEDIDO_ENTREGUE)
+                        closeDrawerState()
+                    }
                 )
                 MenuItem(
                         text = "Adicionar todos os pedidos na rota de entrega",
                 icon = Icons.Filled.Add,
-                onClick = createRoute
+                onClick = {
+                    createRoute()
+                    closeDrawerState()
+                }
                 )
                 MenuItem(
                     text = "Marcar todas como entregues",
                     icon = Icons.Filled.Done,
-                    onClick = markAllTasks
+                    onClick = {
+                        markAllTasks()
+                        closeDrawerState()
+                    }
                 )
                 MenuItem(
                     text = "Digitar Entrega",
                     icon = Icons.Filled.Edit,
-                    onClick = onNavigateToAddTaskScreen
+                    onClick = {
+                        onNavigateToAddTaskScreen()
+                        closeDrawerState()
+                    }
                 )
                 MenuItem(
                     text = "Ir para arquivos",
@@ -130,17 +149,24 @@ fun Menu(
                         } catch (e: Exception) {
                             println(e.message)
                         }
+                        closeDrawerState()
                     }
                 )
                 MenuItem(
                     text = "Abrir Scanner",
                     icon = Icons.Filled.List,
-                    onClick = onNavigateToBarcode
+                    onClick = {
+                        onNavigateToBarcode()
+                        closeDrawerState()
+                    }
                 )
                 MenuItem(
                     text = "Recarregar lista",
                     icon = Icons.Filled.Refresh,
-                    onClick =  onRefresh ,
+                    onClick = {
+                        onRefresh()
+                        closeDrawerState()
+                   }
                 )
             }
         }

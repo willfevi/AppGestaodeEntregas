@@ -12,15 +12,14 @@ import com.example.belportas.model.TaskViewModel
 fun DynamicTaskCard(
     task: Task,
     isDetailsVisible: MutableState<Boolean>,
-    taskViewModel: TaskViewModel,
-    onNavigateEditTaskScreen: (Task) -> Unit
+    taskViewModel: TaskViewModel
 ) {
     val updatedTaskState by rememberUpdatedState(task)
 
     when (updatedTaskState.deliveryStatus) {
         DeliveryStatus.PEDIDO_SEPARADO -> { AcceptTaskCard(updatedTaskState,taskViewModel) }
         DeliveryStatus.PEDIDO_EM_TRANSITO -> { TaskCard(updatedTaskState, isDetailsVisible,
-            taskViewModel) { onNavigateEditTaskScreen(updatedTaskState) }}
+            taskViewModel)}
         else -> { DoneTaskCard(updatedTaskState)}
     }
 }

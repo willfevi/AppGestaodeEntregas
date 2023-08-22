@@ -118,7 +118,7 @@ fun AddTaskScreen(
                     state = phoneValue,
                     label = "Contato",
                     validator = validator::isValidPhoneNumber,
-                    errorMessage = "Telefone inválido! Use o formato (xx)xxxxx-xxxx",
+                    errorMessage = "Telefone inválido! Use o formato (xx)xxxxx-xxxx ou (xx)xxxx-xxxx",
                     maxLength = 14
                 )
 

@@ -14,7 +14,7 @@ data class Task(
     val cep: String,
     var distance :String,
     var deliveryStatus: DeliveryStatus,
-    val date: Date?,
+    var date: Date?,
     val clientName: String
 ): Serializable
 enum class DeliveryStatus {

@@ -54,6 +54,7 @@ import com.example.belportas.data.Task
 import com.example.belportas.model.OpenExternalApps
 import com.example.belportas.model.TaskViewModel
 import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -61,8 +62,7 @@ import java.util.Locale
 fun TaskCard(
     task: Task,
     isDetailsVisible: MutableState<Boolean>,
-    taskViewModel: TaskViewModel,
-    onNavigateEditTaskScreen:(taskId:Int)->Unit
+    taskViewModel: TaskViewModel
 ) {
     val context = LocalContext.current
 
@@ -148,6 +148,7 @@ fun TaskCard(
                             question = "Deseja mesmo marcar essa entrega como concluida?",
                             onConfirm = {
                                 task.deliveryStatus = DeliveryStatus.PEDIDO_ENTREGUE
+                                task.date = Date()
                                 taskViewModel.updateTask(task)
                                 taskViewModel.getAllTasks()
                                 showDialog.value = false
@@ -287,7 +288,7 @@ fun TaskCard(
             Spacer(modifier = Modifier.width(32.dp))
 
             AnimatedVisibility(visible = iconOpacity > 0) {
-                IconButton(onClick = {onNavigateEditTaskScreen(task.id.toInt())}) {
+                IconButton(onClick = {}) {
                     Icon(
                         imageVector = Icons.Default.Delete,
                         contentDescription = "Excluir",

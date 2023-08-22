@@ -70,14 +70,15 @@ class MainActivity : AppCompatActivity() {
                     )
                 }
 
-                composable("taskList") {
-                    TaskListScreen(
+               composable("taskList") {
+                   TaskListScreen(
                         taskViewModel = taskViewModel,
                         onNavigateToBarcode = { navController.navigate("barcodeScreen") },
                         onNavigateToFile = { navController.navigate("filescreen") },
                         onNavigateToAddTaskScreen = { navController.navigate("addtaskscreen")}
-                    ) { task -> navController.navigate("edittaskscreen/${task.id}") }
+                    )
                 }
+
                 composable("signup"){
                     SingUpScreen(
                         onNavigateToLogin = { navController.popBackStack()},
@@ -105,19 +106,7 @@ class MainActivity : AppCompatActivity() {
                         taskViewModel = taskViewModel
                     )
                 }
-                composable("edittaskscreen/{taskId}") { backStackEntry ->
-                    val taskId = backStackEntry.arguments?.getString("taskId")?.toIntOrNull()
-                    taskId?.let {
-                        EditTaskScreen(
-                            taskId = taskId,
-                            onNavigateBack = { navController.popBackStack() },
-                            taskViewModel = taskViewModel
-                        )
-                    } ?: run {
-                    }
-                }
             }
-
         }
         if (showDialog.value) {
             ConfirmDialogPermissions(

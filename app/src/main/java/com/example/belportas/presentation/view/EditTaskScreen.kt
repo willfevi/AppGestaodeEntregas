@@ -35,7 +35,6 @@ import java.util.Locale
 
 @Composable
 fun EditTaskScreen(
-    taskId: Int,
     onNavigateBack: () -> Unit,
     taskViewModel: TaskViewModel
 ) {
