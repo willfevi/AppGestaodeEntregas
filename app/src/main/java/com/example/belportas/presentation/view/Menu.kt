@@ -161,7 +161,7 @@ fun Menu(
                     }
                 )
                 MenuItem(
-                    text = "Recarregar lista",
+                    text = "Reorganizar rota",
                     icon = Icons.Filled.Refresh,
                     onClick = {
                         onRefresh()

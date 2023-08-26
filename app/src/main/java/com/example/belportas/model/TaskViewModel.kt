@@ -94,7 +94,29 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
+    fun reloadAndUpdateDistancesForOngoingTasks() {
+        viewModelScope.launch(coroutineExceptionHandler) {
+            val ongoingTasks = withContext(Dispatchers.IO) {
+                taskDao.getTasksByStatus(DeliveryStatus.PEDIDO_EM_TRANSITO)
+            }
+            val updatedTasks = ongoingTasks.map { task ->
+                val newDistance = locationService.calculateDistanceAsync(userLocation.value, task.address, task.noteNumber).await()
+                task.copy(distance = if (newDistance > 0 && newDistance != Long.MAX_VALUE) newDistance.toString() else task.distance)
+            }
+            var qtdTarefas=0
+            withContext(Dispatchers.IO) {
+                updatedTasks.forEach { updatedTask ->
+                    taskDao.update(updatedTask)
+                    qtdTarefas++
+                }
+            }
+            showToastMessage("Todas as  $qtdTarefas estão com distância atualizada!")
 
+            _tasks.value = withContext(Dispatchers.IO) {
+                taskDao.getAll().sortedBy { it.distance }
+            }
+        }
+    }
 
 
     fun addTaskExternal(task: Task) {
@@ -130,8 +152,6 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-
-
     fun updateTask(task: Task) {
         viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
             taskDao.update(task)
@@ -151,7 +171,12 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
-
+    fun deleteTask(task:Task){
+        viewModelScope.launch(Dispatchers.IO+coroutineExceptionHandler) {
+            taskDao.delete(task)
+            taskDao.getAll()
+        }
+    }
     fun deleteAllTasks() {
         viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
             taskDao.deleteAll()

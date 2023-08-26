@@ -54,14 +54,14 @@ class MainActivity : AppCompatActivity() {
 
         BelPortasTheme {
             NavHost(navController, startDestination = "permissions") {
-                composable("login") {
+                composable("login"){
                     LoginScreen(
                         onNavigateToSignUp = { navController.navigate("signup") },
                         onNavigateToResetPassword = { navController.navigate("resetPassword") },
                         onLoginSuccess = { navController.navigate("permissions") }
                     )
                 }
-                composable("permissions") {
+                composable("permissions"){
                     permissions.PermissionRequestScreen(
                         taskViewModel=taskViewModel,
                         locationService = locationService,
@@ -69,8 +69,7 @@ class MainActivity : AppCompatActivity() {
                         onPermissionDenied = { showDialog.value=true}
                     )
                 }
-
-               composable("taskList") {
+                composable("taskList"){
                    TaskListScreen(
                         taskViewModel = taskViewModel,
                         onNavigateToBarcode = { navController.navigate("barcodeScreen") },
@@ -78,7 +77,6 @@ class MainActivity : AppCompatActivity() {
                         onNavigateToAddTaskScreen = { navController.navigate("addtaskscreen")}
                     )
                 }
-
                 composable("signup"){
                     SingUpScreen(
                         onNavigateToLogin = { navController.popBackStack()},
@@ -88,10 +86,10 @@ class MainActivity : AppCompatActivity() {
                     ResetPasswordScreen(
                         onNavigateBack = {navController.popBackStack()})
                 }
-                composable("barcodeScreen") {
+                composable("barcodeScreen"){
                     BarcodeScreen { navController.popBackStack() }
                 }
-                composable("filescreen") {
+                composable("filescreen"){
                     FileScreen(
                         navController = navController,
                         onNavigateToBarcode = { navController.navigate("barcodeScreen") },
@@ -100,7 +98,7 @@ class MainActivity : AppCompatActivity() {
                         taskViewModel = taskViewModel
                     )
                 }
-                composable("addtaskscreen") {
+                composable("addtaskscreen"){
                     AddTaskScreen(
                         onNavigateBack = { navController.popBackStack() },
                         taskViewModel = taskViewModel

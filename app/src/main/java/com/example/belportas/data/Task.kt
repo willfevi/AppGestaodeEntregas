@@ -15,7 +15,8 @@ data class Task(
     var distance :String,
     var deliveryStatus: DeliveryStatus,
     var date: Date?,
-    val clientName: String
+    val clientName: String,
+    val imagePath: String? = null
 ): Serializable
 enum class DeliveryStatus {
     PEDIDO_SEPARADO,

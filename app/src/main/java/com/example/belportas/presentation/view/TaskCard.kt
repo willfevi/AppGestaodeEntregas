@@ -1,9 +1,13 @@
 package com.example.belportas.presentation.view
 
+import android.app.Activity
+import android.graphics.Bitmap
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
@@ -19,6 +23,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.AlertDialog
+import androidx.compose.material.Button
 import androidx.compose.material.Card
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.FractionalThreshold
@@ -44,6 +50,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -51,8 +58,10 @@ import androidx.compose.ui.unit.dp
 import com.example.belportas.R
 import com.example.belportas.data.DeliveryStatus
 import com.example.belportas.data.Task
+import com.example.belportas.model.ConfirmImage
 import com.example.belportas.model.OpenExternalApps
 import com.example.belportas.model.TaskViewModel
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -79,6 +88,11 @@ fun TaskCard(
     ).value
 
     val anchors = mapOf(-250f to -1f, 0f to 0f)
+
+    val confirmImage = ConfirmImage()
+    val imageBitmap = remember { mutableStateOf<Bitmap?>(null) }
+    val currentPhotoPath = remember { mutableStateOf<String?>(null) }
+
 
     Box(
         modifier = Modifier
@@ -262,7 +276,10 @@ fun TaskCard(
             horizontalArrangement = Arrangement.End
         ) {
             AnimatedVisibility(visible = iconOpacity > 0) {
-                IconButton(onClick = { showDialog.value = true }) {
+                IconButton(onClick = {
+                    Log.d("CameraDebug", "IconButton was clicked!")
+                        confirmImage.simpleCameraIntent(context as Activity)
+                }) {
                     Icon(
                         Icons.Filled.Done,
                         contentDescription = "Entregue!",
@@ -288,7 +305,7 @@ fun TaskCard(
             Spacer(modifier = Modifier.width(32.dp))
 
             AnimatedVisibility(visible = iconOpacity > 0) {
-                IconButton(onClick = {}) {
+                IconButton(onClick = {taskViewModel.deleteAllTasks()}) {
                     Icon(
                         imageVector = Icons.Default.Delete,
                         contentDescription = "Excluir",
@@ -301,5 +318,35 @@ fun TaskCard(
                 }
             }
         }
+    }
+    ImagePreviewDialog(bitmap = imageBitmap.value, onConfirm = {
+        showDialog.value = true
+    }, onCancel = {
+        currentPhotoPath.value?.let {
+            File(it).delete()
+        }
+    })
+
+}
+@Composable
+fun ImagePreviewDialog(bitmap: Bitmap?, onConfirm: () -> Unit, onCancel: () -> Unit) {
+    if (bitmap != null) {
+        AlertDialog(
+            onDismissRequest = onCancel,
+            confirmButton = {
+                Button(onClick = onConfirm) {
+                    Text("Confirmar")
+                }
+            },
+            dismissButton = {
+                Button(onClick = onCancel) {
+                    Text("Cancelar")
+                }
+            },
+            title = { Text(text = "Pré-visualização da Foto") },
+            text = {
+                Image(bitmap = bitmap.asImageBitmap(), contentDescription = null)
+            }
+        )
     }
 }

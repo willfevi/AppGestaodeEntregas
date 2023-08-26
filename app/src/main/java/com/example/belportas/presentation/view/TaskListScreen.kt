@@ -86,7 +86,7 @@ fun TaskListScreen(
         drawerState = drawerState,
         drawerContent = {
             Menu(onNavigateToBarcode=onNavigateToBarcode,
-                onRefresh = { taskViewModel.getAllTasks() },
+                onRefresh = { taskViewModel.reloadAndUpdateDistancesForOngoingTasks()},
                 onNavigateToAddTaskScreen = onNavigateToAddTaskScreen,
                 createRoute ={showDialogMakeRoute.value=true} ,
                 markAllTasks = { showDialogMarkDelivered.value = true},
