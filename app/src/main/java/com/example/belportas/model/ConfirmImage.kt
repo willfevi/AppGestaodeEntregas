@@ -10,11 +10,11 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Environment
 import android.provider.MediaStore
-import android.util.Log
 import androidx.activity.result.ActivityResultLauncher
-import androidx.compose.runtime.MutableState
 import androidx.core.content.FileProvider
+import com.example.belportas.data.Task
 import java.io.File
+import java.io.FileInputStream
 
 class ConfirmImage {
 
@@ -24,21 +24,12 @@ class ConfirmImage {
 
     private var currentPhotoPath: String? = null
 
-    fun startCameraIntent(activity: Activity, launcher: ActivityResultLauncher<Uri>, currentPhotoPath: MutableState<String>) {
-        Log.d("CameraDebug", "startCameraIntent function entered!")
+    fun startCameraIntent(activity: Activity, launcher: ActivityResultLauncher<Uri>, task: Task) {
         val photoFile: File = createImageFile(activity)
-        currentPhotoPath.value = photoFile.absolutePath
+        task.imagePath = photoFile.absolutePath
         val photoURI = FileProvider.getUriForFile(activity, "${activity.packageName}.fileprovider", photoFile)
         launcher.launch(photoURI)
     }
-
-    fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?, onImageConfirmed: (Bitmap?) -> Unit) {
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == Activity.RESULT_OK) {
-            val imageBitmap = BitmapFactory.decodeFile(currentPhotoPath)
-            onImageConfirmed(imageBitmap)
-        }
-    }
-
     private fun createImageFile(context: Context): File {
         val filename = "TEMP_IMG.jpg"
         val storageDir = context.filesDir
@@ -48,14 +39,14 @@ class ConfirmImage {
     }
 
     @SuppressLint("InlinedApi")
-    fun confirmAndSaveImage(context: Context, taskId: Long): Uri? {
+    fun confirmAndSaveImage(context: Context, taskNoteNumber: String): Uri? {
         val bitmap: Bitmap = BitmapFactory.decodeFile(currentPhotoPath)
-        return saveBitmapToMediaStore(context, bitmap, taskId)
+        return saveBitmapToMediaStore(context, bitmap, taskNoteNumber)
     }
 
     @SuppressLint("InlinedApi")
-    private fun saveBitmapToMediaStore(context: Context, bitmap: Bitmap, taskId: Long): Uri? {
-        val displayName = "IMG_$taskId.jpg"
+    private fun saveBitmapToMediaStore(context: Context, bitmap: Bitmap, taskNoteNumber: String): Uri? {
+        val displayName = "IMG_$taskNoteNumber.jpg"
         val resolver = context.contentResolver
         val imageCollection = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
         val contentValues = ContentValues().apply {
@@ -82,8 +73,11 @@ class ConfirmImage {
     }
     fun loadImageFromInternalStorage(context: Context, filename: String): Bitmap? {
         return try {
-            val fis = context.openFileInput(filename)
-            BitmapFactory.decodeStream(fis)
+            val completePath = File(context.filesDir, filename).absolutePath
+            val fis = FileInputStream(completePath)
+            val bitmap = BitmapFactory.decodeStream(fis)
+            fis.close()
+            bitmap
         } catch (e: Exception) {
             e.printStackTrace()
             null

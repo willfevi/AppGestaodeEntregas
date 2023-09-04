@@ -1,4 +1,6 @@
 package com.example.belportas.presentation.view
+import android.graphics.Bitmap
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -15,15 +17,16 @@ import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.List
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,6 +39,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.belportas.data.Task
 import com.example.belportas.model.ConfirmImage
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -47,10 +54,33 @@ fun DoneTaskCard(
     val dateString = task.date?.let { dateFormat.format(it) }
     val hoursFormat = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
     val hoursString = task.date?.let { hoursFormat.format(it) }
-    val confirmImage= ConfirmImage()
+    val confirmImage = ConfirmImage()
     val context = LocalContext.current
-    val imageBitmap = remember { mutableStateOf<android.graphics.Bitmap?>(null) }
+    val imageBitmap = remember { mutableStateOf<Bitmap?>(null) }
     val showDialog = remember { mutableStateOf(false) }
+    val shouldLoadImage = remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(task.imagePath) {
+        if (task.imagePath != null) {
+            Log.d("DoneTaskCard", "Tentando carregar a imagem a partir do path: ${task.imagePath}")
+            coroutineScope.launch(Dispatchers.IO) {
+                val loadedImage = confirmImage.loadImageFromInternalStorage(context, File(task.imagePath).name)
+                withContext(Dispatchers.Main) {
+                    if (loadedImage != null) {
+                        Log.d("DoneTaskCard", "Imagem carregada com sucesso.")
+                        imageBitmap.value = loadedImage
+                    } else {
+                        Log.d("DoneTaskCard", "Falha ao carregar a imagem.")
+                    }
+                }
+            }
+        } else {
+            Log.d("DoneTaskCard", "ImagePath é nulo.")
+        }
+    }
+
+
     Card(
         shape = RoundedCornerShape(8.dp),
         border = BorderStroke(0.25.dp,Color.Gray),
@@ -94,11 +124,10 @@ fun DoneTaskCard(
                 Spacer(Modifier.weight(1f))
                 Icon(
                     imageVector = Icons.Default.Info,
-                    contentDescription = "Info entregra",
+                    contentDescription = "Info entrega",
                     modifier = Modifier
                         .clickable {
-                            val loadedImage = confirmImage.loadImageFromInternalStorage(context,"IMG_${task.id}.jpg")
-                            imageBitmap.value = loadedImage
+                            shouldLoadImage.value=true
                             showDialog.value = true
                         }
                 )
@@ -131,14 +160,15 @@ fun DoneTaskCard(
             },
             title = { Text(text = "Imagem da entrega no horário $hoursString e dia $dateString:") },
             text = {
-                imageBitmap.value?.asImageBitmap()?.let { img ->
+                imageBitmap.value?.let { img ->
+                    val imageBitmapCompose = img.asImageBitmap()
                     Image(
-                        bitmap = img,
+                        bitmap = imageBitmapCompose,
                         contentDescription = "Imagem Carregada",
                         modifier = Modifier.size(200.dp).clip(RoundedCornerShape(4.dp)),
                         contentScale = ContentScale.Crop
                     )
-                }
+                } ?: Text("Imagem não disponível")
             },
             confirmButton = {
                 Button(

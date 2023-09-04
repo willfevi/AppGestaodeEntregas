@@ -58,14 +58,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.belportas.R
-import com.example.belportas.data.DeliveryStatus
 import com.example.belportas.data.Task
 import com.example.belportas.model.ConfirmImage
 import com.example.belportas.model.OpenExternalApps
 import com.example.belportas.model.TaskViewModel
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.util.Date
 import java.util.Locale
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -81,8 +79,6 @@ fun TaskCard(
     val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
     val dateString = task.date?.let { dateFormat.format(it) }
     val openExternalApps = OpenExternalApps()
-
-    val showDialog = remember { mutableStateOf(false) }
 
     val swipeableState = rememberSwipeableState(initialValue = 0f)
 
@@ -102,9 +98,12 @@ fun TaskCard(
     val onImageConfirmed: (Bitmap?) -> Unit = { bitmap ->
         if (bitmap != null) {
             Log.d("CameraDebug", "Image confirmed!")
-            confirmImage.confirmAndSaveImage(context, task.id)?.let {
+            confirmImage.confirmAndSaveImage(context, task.noteNumber)?.let {
                 Log.d("CameraDebug", "Image saved successfully!")
-                showDialog.value=true
+                taskViewModel.markTaskAsDelivered(task.id)
+                scope.launch {
+                    swipeableState.snapTo(0f)
+                }
                 isImageConfirmed.value = true
             } ?: run {
                 Log.d("CameraDebug", "Failed to save image.")
@@ -113,13 +112,11 @@ fun TaskCard(
             Log.d("CameraDebug", "Bitmap is null.")
         }
     }
-    val currentPhotoPath = remember { mutableStateOf("") }
-
     val takePictureLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { isSuccess ->
         if (isSuccess) {
             try {
-                Log.d("CameraDebug", "Attempting to decode bitmap from: ${currentPhotoPath.value}")
-                val imageBitmap = BitmapFactory.decodeFile(currentPhotoPath.value)
+                Log.d("CameraDebug", "Attempting to decode bitmap from: ${task.imagePath}")
+                val imageBitmap = BitmapFactory.decodeFile(task.imagePath)
                 onImageConfirmed(imageBitmap)
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -193,24 +190,6 @@ fun TaskCard(
                             .fillMaxWidth(0.8f)
                     )
                     Spacer(Modifier.weight(1f))
-                    if (showDialog.value) {
-                        ConfirmDialog(
-                            question = "Deseja mesmo marcar essa entrega como concluida?",
-                            onConfirm = {
-                                task.deliveryStatus = DeliveryStatus.PEDIDO_ENTREGUE
-                                task.date = Date()
-                                taskViewModel.updateTask(task)
-                                taskViewModel.getAllTasks()
-                                scope.launch {
-                                    swipeableState.snapTo(0f)
-                                }
-                                showDialog.value = false
-                            },
-                            onDismissRequest = {
-                                showDialog.value = false
-                            }
-                        )
-                    }
                 }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -323,7 +302,7 @@ fun TaskCard(
                         .alpha(iconOpacity)
                         .clickable {
                         activity?.let {
-                            confirmImage.startCameraIntent(it, takePictureLauncher, currentPhotoPath)
+                            confirmImage.startCameraIntent(it, takePictureLauncher, task)
                         }
                     },
                     tint = Color(0xFF2C7A30)
