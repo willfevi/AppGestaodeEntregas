@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.lang.ref.WeakReference
+import java.util.Date
 import java.util.concurrent.Semaphore
 
 class TaskViewModel(application: Application) : AndroidViewModel(application) {
@@ -171,18 +172,25 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
-    fun deleteTask(task:Task){
-        viewModelScope.launch(Dispatchers.IO+coroutineExceptionHandler) {
+    fun deleteTask(task: Task) {
+        viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
             taskDao.delete(task)
-            taskDao.getAll()
+            val updatedTaskList = taskDao.getAll()
+            _tasks.value = updatedTaskList
         }
     }
-    fun deleteAllTasks() {
+    fun markTaskAsDelivered(taskId: Long) {
         viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
-            taskDao.deleteAll()
+            val taskToUpdate = taskDao.getTaskById(taskId.toInt())
+            taskToUpdate?.let {
+                it.deliveryStatus = DeliveryStatus.PEDIDO_ENTREGUE
+                it.date= Date()
+                taskDao.update(it)
+            }
             _tasks.value = taskDao.getAll()
         }
     }
+
     fun markAllAsDelivered() {
         viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
             val tasksToUpdate = taskDao.getAll().filter { it.deliveryStatus == DeliveryStatus.PEDIDO_EM_TRANSITO}

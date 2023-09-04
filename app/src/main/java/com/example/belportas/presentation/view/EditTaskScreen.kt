@@ -1,5 +1,6 @@
 package com.example.belportas.presentation.view
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
@@ -19,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -35,21 +37,22 @@ import java.util.Locale
 
 @Composable
 fun EditTaskScreen(
+    task: Task?,
     onNavigateBack: () -> Unit,
     taskViewModel: TaskViewModel
 ) {
+    Log.d("EditTaskScreen", "Received task: $task")
 
-    val task = taskViewModel.task.collectAsState().value
-
-    val noteNumberValue = remember { mutableStateOf(task?.noteNumber ?: "") }
-    val phoneValue = remember { mutableStateOf(task?.phoneClient ?: "") }
-    val valueValue = remember { mutableStateOf(task?.value ?: "") }
-    val addressValue = remember { mutableStateOf(task?.address ?: "") }
-    val cepValue = remember { mutableStateOf(task?.cep ?: "") }
-    val distanceValue = remember { mutableStateOf(task?.distance ?: "") }
-    val deliveryStatusValue = remember { mutableStateOf(task?.deliveryStatus ?: true) }
-    val clientNameValue = remember { mutableStateOf(task?.clientName ?: "") }
-
+    val noteNumberValue = rememberSaveable { mutableStateOf(task?.noteNumber ?: "") }
+    val phoneValue = rememberSaveable { mutableStateOf(task?.phoneClient ?: "") }
+    val valueValue = rememberSaveable { mutableStateOf(task?.value ?: "") }
+    val addressValue = rememberSaveable { mutableStateOf(task?.address ?: "") }
+    val cepValue = rememberSaveable { mutableStateOf(task?.cep ?: "") }
+    val distanceValue = rememberSaveable { mutableStateOf(task?.distance ?: "") }
+    val deliveryStatusValue = rememberSaveable { mutableStateOf(task?.deliveryStatus ?: DeliveryStatus.PEDIDO_EM_TRANSITO) }
+    val clientNameValue = rememberSaveable { mutableStateOf(task?.clientName ?: "") }
+    val dateValue = rememberSaveable { mutableStateOf(task?.date ?: Date()) }
+    val idValue = rememberSaveable { mutableStateOf(task?.id ?: 0L) }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -89,29 +92,29 @@ fun EditTaskScreen(
                 val context = LocalContext.current
                 Button(
                     onClick = {
-                        val sdf = SimpleDateFormat("dd/MM/yyyy", Locale("pt", "BR"))
-                        val currentDate = sdf.format(Date())
-
-                        if (noteNumberValue.value.isNotEmpty()
-                            && valueValue.value.isNotEmpty()
-                            && addressValue.value.isNotEmpty()
-                            && cepValue.value.isNotEmpty()
-                            && clientNameValue.value.isNotEmpty()
-                            && phoneValue.value.isNotEmpty()
+                        if (noteNumberValue.value.isNotEmpty() &&
+                            valueValue.value.isNotEmpty() &&
+                            addressValue.value.isNotEmpty() &&
+                            cepValue.value.isNotEmpty() &&
+                            clientNameValue.value.isNotEmpty() &&
+                            phoneValue.value.isNotEmpty()
                         ) {
                             val updatedTask = Task(
+                                id = idValue.value,
                                 noteNumber = noteNumberValue.value,
                                 value = valueValue.value,
                                 address = addressValue.value,
                                 cep = cepValue.value,
                                 distance = distanceValue.value,
-                                deliveryStatus = DeliveryStatus.PEDIDO_EM_TRANSITO,
-                                date = sdf.parse(currentDate),
+                                deliveryStatus = deliveryStatusValue.value,
+                                date = dateValue.value,
                                 clientName = clientNameValue.value,
                                 phoneClient = phoneValue.value
                             )
+                            Log.d("EditTaskScreen", "Updating task with values: ${updatedTask}")
                             taskViewModel.updateTask(updatedTask)
-                            taskViewModel.addTask(updatedTask)
+
+                            onNavigateBack()
                             Toast.makeText(
                                 context,
                                 "Tarefa editada com sucesso!",

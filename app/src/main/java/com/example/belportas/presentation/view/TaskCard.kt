@@ -1,13 +1,17 @@
 package com.example.belportas.presentation.view
 
 import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
@@ -23,8 +27,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.AlertDialog
-import androidx.compose.material.Button
 import androidx.compose.material.Card
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.FractionalThreshold
@@ -46,11 +48,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -61,7 +63,7 @@ import com.example.belportas.data.Task
 import com.example.belportas.model.ConfirmImage
 import com.example.belportas.model.OpenExternalApps
 import com.example.belportas.model.TaskViewModel
-import java.io.File
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -71,10 +73,11 @@ import java.util.Locale
 fun TaskCard(
     task: Task,
     isDetailsVisible: MutableState<Boolean>,
-    taskViewModel: TaskViewModel
+    taskViewModel: TaskViewModel,
+    editTaskScreen: ()-> Unit
 ) {
     val context = LocalContext.current
-
+    val activity = context.findActivity()
     val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
     val dateString = task.date?.let { dateFormat.format(it) }
     val openExternalApps = OpenExternalApps()
@@ -82,6 +85,9 @@ fun TaskCard(
     val showDialog = remember { mutableStateOf(false) }
 
     val swipeableState = rememberSwipeableState(initialValue = 0f)
+
+
+    val scope = rememberCoroutineScope()
     val iconOpacity = animateFloatAsState(
         targetValue = if (swipeableState.offset.value < -100) 1f else 0f,
         animationSpec = tween(500)
@@ -90,9 +96,39 @@ fun TaskCard(
     val anchors = mapOf(-250f to -1f, 0f to 0f)
 
     val confirmImage = ConfirmImage()
-    val imageBitmap = remember { mutableStateOf<Bitmap?>(null) }
-    val currentPhotoPath = remember { mutableStateOf<String?>(null) }
 
+    val isImageConfirmed = remember { mutableStateOf(false) }
+
+    val onImageConfirmed: (Bitmap?) -> Unit = { bitmap ->
+        if (bitmap != null) {
+            Log.d("CameraDebug", "Image confirmed!")
+            confirmImage.confirmAndSaveImage(context, task.id)?.let {
+                Log.d("CameraDebug", "Image saved successfully!")
+                showDialog.value=true
+                isImageConfirmed.value = true
+            } ?: run {
+                Log.d("CameraDebug", "Failed to save image.")
+            }
+        } else {
+            Log.d("CameraDebug", "Bitmap is null.")
+        }
+    }
+    val currentPhotoPath = remember { mutableStateOf("") }
+
+    val takePictureLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { isSuccess ->
+        if (isSuccess) {
+            try {
+                Log.d("CameraDebug", "Attempting to decode bitmap from: ${currentPhotoPath.value}")
+                val imageBitmap = BitmapFactory.decodeFile(currentPhotoPath.value)
+                onImageConfirmed(imageBitmap)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                onImageConfirmed(null)
+            }
+        } else {
+            Log.d("CameraDebug", "Picture was not taken successfully.")
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -165,6 +201,9 @@ fun TaskCard(
                                 task.date = Date()
                                 taskViewModel.updateTask(task)
                                 taskViewModel.getAllTasks()
+                                scope.launch {
+                                    swipeableState.snapTo(0f)
+                                }
                                 showDialog.value = false
                             },
                             onDismissRequest = {
@@ -220,7 +259,7 @@ fun TaskCard(
                         modifier = Modifier.padding(16.dp)
                     )
                     Text(
-                        text = "      (${task.distance} km)",
+                        text = "${task.distance}km",
                         fontWeight = FontWeight.Bold
                     )
 
@@ -276,77 +315,53 @@ fun TaskCard(
             horizontalArrangement = Arrangement.End
         ) {
             AnimatedVisibility(visible = iconOpacity > 0) {
-                IconButton(onClick = {
-                    Log.d("CameraDebug", "IconButton was clicked!")
-                        confirmImage.simpleCameraIntent(context as Activity)
-                }) {
-                    Icon(
-                        Icons.Filled.Done,
-                        contentDescription = "Entregue!",
-                        modifier = Modifier.size(24.dp).alpha(iconOpacity),
-                        tint = Color(0xFF2C7A30)
-                    )
-                }
+                Icon(
+                    Icons.Filled.Done,
+                    contentDescription = "Entregue!",
+                    modifier = Modifier
+                        .size(24.dp)
+                        .alpha(iconOpacity)
+                        .clickable {
+                        activity?.let {
+                            confirmImage.startCameraIntent(it, takePictureLauncher, currentPhotoPath)
+                        }
+                    },
+                    tint = Color(0xFF2C7A30)
+                )
             }
-            Spacer(modifier = Modifier.width(32.dp))
+            Spacer(modifier = Modifier.width(64.dp))
 
             AnimatedVisibility(visible = iconOpacity > 0) {
-                IconButton(onClick = {}) {
-                    Icon(
-                        imageVector = Icons.Default.Edit,
-                        contentDescription = "Editar",
-                        modifier = Modifier
-                            .size(24.dp)
-                            .clickable {}
-                            .alpha(iconOpacity)
-                    )
-                }
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = "Editar",
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clickable {editTaskScreen()}
+                        .alpha(iconOpacity)
+                )
             }
-            Spacer(modifier = Modifier.width(32.dp))
+            Spacer(modifier = Modifier.width(64.dp))
 
             AnimatedVisibility(visible = iconOpacity > 0) {
-                IconButton(onClick = {taskViewModel.deleteAllTasks()}) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Excluir",
-                        modifier = Modifier
-                            .size(24.dp)
-                            .clickable {}
-                            .alpha(iconOpacity),
-                        tint = Color(0xFF888888)
-                    )
-                }
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Excluir",
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clickable {taskViewModel.deleteTask(task)}
+                        .alpha(iconOpacity),
+                    tint = Color(0xFF888888)
+                )
             }
         }
     }
-    ImagePreviewDialog(bitmap = imageBitmap.value, onConfirm = {
-        showDialog.value = true
-    }, onCancel = {
-        currentPhotoPath.value?.let {
-            File(it).delete()
-        }
-    })
-
 }
-@Composable
-fun ImagePreviewDialog(bitmap: Bitmap?, onConfirm: () -> Unit, onCancel: () -> Unit) {
-    if (bitmap != null) {
-        AlertDialog(
-            onDismissRequest = onCancel,
-            confirmButton = {
-                Button(onClick = onConfirm) {
-                    Text("Confirmar")
-                }
-            },
-            dismissButton = {
-                Button(onClick = onCancel) {
-                    Text("Cancelar")
-                }
-            },
-            title = { Text(text = "Pré-visualização da Foto") },
-            text = {
-                Image(bitmap = bitmap.asImageBitmap(), contentDescription = null)
-            }
-        )
+fun Context.findActivity(): Activity? {
+    val context = this
+    while (context is ContextWrapper) {
+        if (context is Activity)
+            return context
     }
+    return null
 }

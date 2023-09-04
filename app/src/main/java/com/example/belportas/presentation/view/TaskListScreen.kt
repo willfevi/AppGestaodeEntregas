@@ -1,7 +1,6 @@
 package com.example.belportas.presentation.view
 
 import android.content.Context
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
@@ -41,6 +40,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.example.belportas.R
 import com.example.belportas.data.DeliveryStatus
 import com.example.belportas.data.Task
@@ -56,48 +56,55 @@ fun TaskListScreen(
     taskViewModel: TaskViewModel,
     onNavigateToBarcode: () -> Unit,
     onNavigateToFile: () -> Unit,
-    onNavigateToAddTaskScreen: () -> Unit
+    onNavigateToAddTaskScreen: () -> Unit,
+    navController: NavController
 ) {
     val isSearchVisible = remember { mutableStateOf(false) }
     val searchTerm = remember { mutableStateOf(TextFieldValue("")) }
     val selectedDateMillis = remember { mutableStateOf<Long?>(null) }
     val context = LocalContext.current
     val tasksStateFlow = taskViewModel.tasks.collectAsState()
-    tasksStateFlow.value
-        .filter { task -> task.deliveryStatus == DeliveryStatus.PEDIDO_EM_TRANSITO }
+
     val sdf = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
     val selectedStatus = taskViewModel.getSelectedStatus()
+
     val filteredTasks = tasksStateFlow.value.filter { task ->
         val matches = task.deliveryStatus == selectedStatus &&
                 task.noteNumber.contains(searchTerm.value.text) &&
                 (selectedDateMillis.value == null || task.date?.let { sdf.format(it) } == sdf.format(selectedDateMillis.value))
-        Log.d("Filtering", "Task: $task, Matches: $matches")
         matches
     }
 
+    val ongoingTasks = filteredTasks.filter { it.deliveryStatus == DeliveryStatus.PEDIDO_EM_TRANSITO }
+    val completedTasks = filteredTasks.filter { it.deliveryStatus == DeliveryStatus.PEDIDO_ENTREGUE }
+    val separatedTasks = filteredTasks.filter { it.deliveryStatus == DeliveryStatus.PEDIDO_SEPARADO }
+
+    val sortedOngoingTasks = ongoingTasks.sortedWith(::compareByDistanceThenName)
+    val sortedCompletedTasks = completedTasks.sortedByDescending { it.date }
+
+    val finalSortedTasks = sortedOngoingTasks + sortedCompletedTasks + separatedTasks
+
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-
-    val showDialogMarkDelivered = remember { mutableStateOf(false) }
     val showDialogMakeRoute = remember { mutableStateOf(false) }
 
 
     ModalDrawer(
         drawerState = drawerState,
         drawerContent = {
-            Menu(onNavigateToBarcode=onNavigateToBarcode,
-                onRefresh = { taskViewModel.reloadAndUpdateDistancesForOngoingTasks()},
+            Menu(
+                onNavigateToBarcode = onNavigateToBarcode,
+                onRefresh = { taskViewModel.reloadAndUpdateDistancesForOngoingTasks() },
                 onNavigateToAddTaskScreen = onNavigateToAddTaskScreen,
-                createRoute ={showDialogMakeRoute.value=true} ,
-                markAllTasks = { showDialogMarkDelivered.value = true},
+                createRoute = { showDialogMakeRoute.value = true },
                 taskViewModel = taskViewModel,
-                closeDrawerState ={
+                closeDrawerState = {
                     scope.launch {
                         drawerState.close()
                     }
                 }
             )
-        },
+        }
     ) {
         Scaffold(
             topBar = {
@@ -162,24 +169,14 @@ fun TaskListScreen(
                     .padding(top = 8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                itemsIndexed(filteredTasks.sortedWith(::compareByDistanceThenName)) { _, task ->
+                itemsIndexed(finalSortedTasks) { _, task ->
                     val isDetailsVisible = remember { mutableStateOf(false) }
-                    DynamicTaskCard(task, isDetailsVisible, taskViewModel)
+                    DynamicTaskCard(task, isDetailsVisible, taskViewModel,editTaskScreen = {
+                        navController.navigate("editTaskScreen/${task.id}")
+                    })
                 }
             }
         }
-    }
-    if (showDialogMarkDelivered.value) {
-        ConfirmDialog(
-            question = "Deseja mesmo marcar todas as tarefas como entregue ?",
-            onConfirm = {
-                taskViewModel.markAllAsDelivered()
-                showDialogMarkDelivered.value = false
-            },
-            onDismissRequest = {
-                showDialogMarkDelivered.value = false
-            }
-        )
     }
     if (showDialogMakeRoute.value) {
         ConfirmDialog(

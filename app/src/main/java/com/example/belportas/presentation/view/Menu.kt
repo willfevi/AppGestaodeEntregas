@@ -55,7 +55,6 @@ fun Menu(
     onRefresh: () -> Unit,
     onNavigateToAddTaskScreen: () -> Unit,
     createRoute: () -> Unit,
-    markAllTasks: () -> Unit,
     taskViewModel: TaskViewModel,
     closeDrawerState:() -> Unit
 ) {
@@ -122,14 +121,6 @@ fun Menu(
                     createRoute()
                     closeDrawerState()
                 }
-                )
-                MenuItem(
-                    text = "Marcar todas como entregues",
-                    icon = Icons.Filled.Done,
-                    onClick = {
-                        markAllTasks()
-                        closeDrawerState()
-                    }
                 )
                 MenuItem(
                     text = "Digitar Entrega",

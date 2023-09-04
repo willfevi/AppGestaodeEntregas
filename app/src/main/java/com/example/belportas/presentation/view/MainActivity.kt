@@ -14,7 +14,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.belportas.data.LocationService
-import com.example.belportas.model.Permissions
 import com.example.belportas.model.TaskViewModel
 import com.example.belportas.model.handleSendXml
 import com.example.belportas.ui.theme.BelPortasTheme
@@ -24,8 +23,6 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 @ExperimentalPermissionsApi
 class MainActivity : AppCompatActivity() {
     private val taskViewModel: TaskViewModel by viewModels()
-    private val permissions by lazy { Permissions() }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -62,7 +59,7 @@ class MainActivity : AppCompatActivity() {
                     )
                 }
                 composable("permissions"){
-                    permissions.PermissionRequestScreen(
+                    PermissionRequestScreen(
                         taskViewModel=taskViewModel,
                         locationService = locationService,
                         onPermissionGranted = { navController.navigate("taskList") },
@@ -74,9 +71,22 @@ class MainActivity : AppCompatActivity() {
                         taskViewModel = taskViewModel,
                         onNavigateToBarcode = { navController.navigate("barcodeScreen") },
                         onNavigateToFile = { navController.navigate("filescreen") },
-                        onNavigateToAddTaskScreen = { navController.navigate("addtaskscreen")}
+                        onNavigateToAddTaskScreen = { navController.navigate("addtaskscreen")},
+                        navController = navController
                     )
                 }
+                composable("editTaskScreen/{taskId}") { backStackEntry ->
+                    val taskId = backStackEntry.arguments?.getString("taskId")
+                    taskId?.let {
+                            val task = taskViewModel.task.value
+                            EditTaskScreen(
+                                task = task,
+                                onNavigateBack = { navController.popBackStack() },
+                                taskViewModel = taskViewModel
+                            )
+                    }
+                }
+
                 composable("signup"){
                     SingUpScreen(
                         onNavigateToLogin = { navController.popBackStack()},

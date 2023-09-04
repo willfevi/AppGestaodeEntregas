@@ -1,16 +1,20 @@
 package com.example.belportas.model
 
+import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.net.Uri
+import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
+import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.runtime.MutableState
 import androidx.core.content.FileProvider
 import java.io.File
-import java.io.FileOutputStream
 
 class ConfirmImage {
 
@@ -20,30 +24,20 @@ class ConfirmImage {
 
     private var currentPhotoPath: String? = null
 
-    fun startCameraIntent(activity: Activity) {
+    fun startCameraIntent(activity: Activity, launcher: ActivityResultLauncher<Uri>, currentPhotoPath: MutableState<String>) {
         Log.d("CameraDebug", "startCameraIntent function entered!")
-        val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        if (takePictureIntent.resolveActivity(activity.packageManager) != null) {
-            val photoFile: File = createImageFile(activity)
-            val photoURI = FileProvider.getUriForFile(activity, "${activity.packageName}.fileprovider", photoFile)
-            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
-            activity.startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE)
-        }
-    }
-    fun simpleCameraIntent(activity: Activity) {
-        val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        if (takePictureIntent.resolveActivity(activity.packageManager) != null) {
-            activity.startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE)
-        }
+        val photoFile: File = createImageFile(activity)
+        currentPhotoPath.value = photoFile.absolutePath
+        val photoURI = FileProvider.getUriForFile(activity, "${activity.packageName}.fileprovider", photoFile)
+        launcher.launch(photoURI)
     }
 
-    fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?, onImageCaptured: (Bitmap?) -> Unit) {
+    fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?, onImageConfirmed: (Bitmap?) -> Unit) {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == Activity.RESULT_OK) {
             val imageBitmap = BitmapFactory.decodeFile(currentPhotoPath)
-            onImageCaptured(imageBitmap)
+            onImageConfirmed(imageBitmap)
         }
     }
-
 
     private fun createImageFile(context: Context): File {
         val filename = "TEMP_IMG.jpg"
@@ -53,28 +47,39 @@ class ConfirmImage {
         }
     }
 
-    fun confirmAndSaveImage(context: Context, taskId: Long): String? {
+    @SuppressLint("InlinedApi")
+    fun confirmAndSaveImage(context: Context, taskId: Long): Uri? {
         val bitmap: Bitmap = BitmapFactory.decodeFile(currentPhotoPath)
-        return saveImageToInternalStorage(context, bitmap, taskId)
+        return saveBitmapToMediaStore(context, bitmap, taskId)
     }
 
-    private fun saveImageToInternalStorage(context: Context, bitmap: Bitmap, taskId: Long): String? {
-        return try {
-            val filename = "IMG_$taskId.jpg"
-            val storageDir = File(context.filesDir, "Bel imagens")
-            storageDir.mkdirs() // Cria o diretório se não existir
-            val imageFile = File(storageDir, filename)
-            val fos = FileOutputStream(imageFile)
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos)
-            fos.close()
-            filename
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
+    @SuppressLint("InlinedApi")
+    private fun saveBitmapToMediaStore(context: Context, bitmap: Bitmap, taskId: Long): Uri? {
+        val displayName = "IMG_$taskId.jpg"
+        val resolver = context.contentResolver
+        val imageCollection = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+        val contentValues = ContentValues().apply {
+            put(MediaStore.Images.Media.DISPLAY_NAME, displayName)
+            put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+            put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
         }
+
+        var uri: Uri? = null
+        try {
+            uri = resolver.insert(imageCollection, contentValues)
+            uri?.let {
+                resolver.openOutputStream(it).use { outputStream ->
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+                }
+            }
+        } catch (e: Exception) {
+            if (uri != null) {
+                resolver.delete(uri, null, null)
+            }
+        }
+
+        return uri
     }
-
-
     fun loadImageFromInternalStorage(context: Context, filename: String): Bitmap? {
         return try {
             val fis = context.openFileInput(filename)
@@ -85,4 +90,7 @@ class ConfirmImage {
         }
     }
 }
+
+
+
 
