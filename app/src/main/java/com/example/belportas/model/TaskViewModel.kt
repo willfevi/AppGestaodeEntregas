@@ -2,6 +2,7 @@ package com.example.belportas.model
 
 import android.app.Application
 import android.location.Location
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
@@ -83,18 +84,6 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
-    fun getTaskById(taskId: Int) {
-        viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
-            try {
-                val result = taskDao.getTaskById(taskId)
-                withContext(Dispatchers.Main) {
-                    _task.value = result
-                }
-            } catch (e: Exception) {
-                showToastMessage("Erro ao buscar tarefa por ID: ${e.message}")
-            }
-        }
-    }
     fun reloadAndUpdateDistancesForOngoingTasks() {
         viewModelScope.launch(coroutineExceptionHandler) {
             val ongoingTasks = withContext(Dispatchers.IO) {
@@ -118,8 +107,6 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
-
-
     fun addTaskExternal(task: Task) {
         viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
             try {
@@ -181,21 +168,10 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
     }
     fun markTaskAsDelivered(taskId: Long) {
         viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
-            val taskToUpdate = taskDao.getTaskById(taskId.toInt())
-            taskToUpdate?.let {
+            val taskToUpdate = taskDao.getTaskById(taskId)
+            taskToUpdate.let {
                 it.deliveryStatus = DeliveryStatus.PEDIDO_ENTREGUE
                 it.date= Date()
-                taskDao.update(it)
-            }
-            _tasks.value = taskDao.getAll()
-        }
-    }
-
-    fun markAllAsDelivered() {
-        viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
-            val tasksToUpdate = taskDao.getAll().filter { it.deliveryStatus == DeliveryStatus.PEDIDO_EM_TRANSITO}
-            tasksToUpdate.forEach {
-                it.deliveryStatus = DeliveryStatus.PEDIDO_ENTREGUE
                 taskDao.update(it)
             }
             _tasks.value = taskDao.getAll()
@@ -207,6 +183,54 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
             tasksToUpdate.forEach {
                 it.deliveryStatus = DeliveryStatus.PEDIDO_EM_TRANSITO
                 taskDao.update(it)
+            }
+            _tasks.value = taskDao.getAll()
+        }
+    }
+    private fun markTaskAsDeleted(taskId: Long) {
+        viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
+            try {
+                val taskToUpdate = taskDao.getTaskById(taskId)
+                taskToUpdate.deliveryStatus = DeliveryStatus.PEDIDO_EXCLUIDO
+                taskToUpdate.date = Date()
+                taskDao.update(taskToUpdate)
+                _tasks.value = taskDao.getAll()
+            } catch (e: Exception) {
+                showToastMessage("Erro ao marcar tarefa como excluída: ${e.message}")
+            }
+        }
+    }
+
+    fun updateTaskObservation(taskId: Long, newObservation: String) {
+        viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
+            try {
+                Log.d("Debug", "Tentando atualizar a observação")
+
+                if (newObservation.isNullOrEmpty()) {
+                    Log.d("Debug", "Observação é nula ou vazia. Saindo...")
+                    return@launch
+                }
+
+                val taskToUpdate = taskDao.getTaskById(taskId)
+                Log.d("Debug", "Tarefa a ser atualizada: ${taskToUpdate.id} da tarefa $taskToUpdate")
+
+                taskToUpdate.observation = newObservation
+                taskDao.update(taskToUpdate)
+                markTaskAsDeleted(taskToUpdate.id)
+
+                Log.d("Debug", "Tarefa atualizada: $taskToUpdate")
+
+                _tasks.value = _tasks.value.map {
+                    if (it.id == taskId) {
+                        taskToUpdate
+                    } else {
+                        it
+                    }
+                }
+                showToastMessage("Observação adicionada com sucesso!")
+            } catch (e: Exception) {
+                Log.e("Debug", "Erro ao atualizar a observação", e)
+                showToastMessage("Erro ao atualizar a observação: ${e.message}")
             }
             _tasks.value = taskDao.getAll()
         }

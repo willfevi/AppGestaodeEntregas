@@ -48,6 +48,7 @@ class XmlConfig {
         var date =""
         var clientName = ""
         var phoneClient = ""
+        val observation = ""
 
         parser.require(XmlPullParser.START_TAG, null, "NFe")
         while (parser.next() != XmlPullParser.END_TAG) {
@@ -174,7 +175,9 @@ class XmlConfig {
             distance,
             deliveryStatus,
             parsedDate,
-            clientName
+            clientName,
+            null,
+            observation
         )
     }
 

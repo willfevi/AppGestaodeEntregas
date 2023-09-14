@@ -16,7 +16,7 @@ interface TaskDao {
     @Query("SELECT * FROM task")
     fun getAll(): List<Task>
     @Query("SELECT * FROM task WHERE id = :taskId")
-    fun getTaskById(taskId: Int): Task
+    fun getTaskById(taskId:Long): Task
 
     @Delete
     fun delete(task: Task)

@@ -17,9 +17,8 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,9 +30,7 @@ import com.example.belportas.R
 import com.example.belportas.data.DeliveryStatus
 import com.example.belportas.data.Task
 import com.example.belportas.model.TaskViewModel
-import java.text.SimpleDateFormat
 import java.util.Date
-import java.util.Locale
 
 @Composable
 fun EditTaskScreen(
@@ -52,7 +49,8 @@ fun EditTaskScreen(
     val deliveryStatusValue = rememberSaveable { mutableStateOf(task?.deliveryStatus ?: DeliveryStatus.PEDIDO_EM_TRANSITO) }
     val clientNameValue = rememberSaveable { mutableStateOf(task?.clientName ?: "") }
     val dateValue = rememberSaveable { mutableStateOf(task?.date ?: Date()) }
-    val idValue = rememberSaveable { mutableStateOf(task?.id ?: 0L) }
+    val idValue = rememberSaveable { mutableLongStateOf(task?.id ?: 0L) }
+    val observationValue=  ""
     Scaffold(
         topBar = {
             TopAppBar(
@@ -109,9 +107,10 @@ fun EditTaskScreen(
                                 deliveryStatus = deliveryStatusValue.value,
                                 date = dateValue.value,
                                 clientName = clientNameValue.value,
-                                phoneClient = phoneValue.value
+                                phoneClient = phoneValue.value,
+                                observation = observationValue
                             )
-                            Log.d("EditTaskScreen", "Updating task with values: ${updatedTask}")
+                            Log.d("EditTaskScreen", "Updating task with values: $updatedTask")
                             taskViewModel.updateTask(updatedTask)
 
                             onNavigateBack()

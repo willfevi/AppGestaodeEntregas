@@ -21,6 +21,7 @@ fun DynamicTaskCard(
         DeliveryStatus.PEDIDO_SEPARADO -> { AcceptTaskCard(updatedTaskState,taskViewModel) }
         DeliveryStatus.PEDIDO_EM_TRANSITO -> { TaskCard(updatedTaskState, isDetailsVisible,
             taskViewModel,editTaskScreen)}
+        DeliveryStatus.PEDIDO_EXCLUIDO -> { WarningCard(updatedTaskState,taskViewModel)}
         else -> { DoneTaskCard(updatedTaskState)}
     }
 }

@@ -78,16 +78,17 @@ fun TaskListScreen(
     val ongoingTasks = filteredTasks.filter { it.deliveryStatus == DeliveryStatus.PEDIDO_EM_TRANSITO }
     val completedTasks = filteredTasks.filter { it.deliveryStatus == DeliveryStatus.PEDIDO_ENTREGUE }
     val separatedTasks = filteredTasks.filter { it.deliveryStatus == DeliveryStatus.PEDIDO_SEPARADO }
+    val deletedTasks = filteredTasks.filter { it.deliveryStatus == DeliveryStatus.PEDIDO_EXCLUIDO }
 
     val sortedOngoingTasks = ongoingTasks.sortedWith(::compareByDistanceThenName)
     val sortedCompletedTasks = completedTasks.sortedByDescending { it.date }
+    val sortedDeletedTasks = deletedTasks.sortedByDescending { it.date }
 
-    val finalSortedTasks = sortedOngoingTasks + sortedCompletedTasks + separatedTasks
+    val finalSortedTasks = sortedOngoingTasks + sortedCompletedTasks + separatedTasks + sortedDeletedTasks
 
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val showDialogMakeRoute = remember { mutableStateOf(false) }
-
 
     ModalDrawer(
         drawerState = drawerState,

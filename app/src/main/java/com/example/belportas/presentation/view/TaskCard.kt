@@ -126,6 +126,7 @@ fun TaskCard(
             Log.d("CameraDebug", "Picture was not taken successfully.")
         }
     }
+    val showDialogDelete = remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -304,6 +305,9 @@ fun TaskCard(
                         activity?.let {
                             confirmImage.startCameraIntent(it, takePictureLauncher, task)
                         }
+                        scope.launch {
+                                swipeableState.snapTo(0f)
+                        }
                     },
                     tint = Color(0xFF2C7A30)
                 )
@@ -316,7 +320,12 @@ fun TaskCard(
                     contentDescription = "Editar",
                     modifier = Modifier
                         .size(24.dp)
-                        .clickable {editTaskScreen()}
+                        .clickable {
+                            editTaskScreen()
+                            scope.launch {
+                                swipeableState.snapTo(0f)
+                            }
+                        }
                         .alpha(iconOpacity)
                 )
             }
@@ -328,11 +337,29 @@ fun TaskCard(
                     contentDescription = "Excluir",
                     modifier = Modifier
                         .size(24.dp)
-                        .clickable {taskViewModel.deleteTask(task)}
+                        .clickable {
+                            showDialogDelete.value = true
+                            scope.launch {
+                                swipeableState.snapTo(0f)
+                            }
+                        }
                         .alpha(iconOpacity),
                     tint = Color(0xFF888888)
                 )
             }
+        }
+        if (showDialogDelete.value) {
+            val textFieldState = remember { mutableStateOf(task.observation ?: "") }
+            ConfirmDialogDelete(
+                question = "Deseja excluir essa entrega?",
+                task = task,
+                onConfirm = {
+                    taskViewModel.updateTaskObservation(task.id, textFieldState.value)
+                    showDialogDelete.value = false
+                },
+                onDismissRequest = { showDialogDelete.value = false },
+                taskViewModel=taskViewModel
+            )
         }
     }
 }

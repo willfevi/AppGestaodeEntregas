@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ContentValues
 import android.content.Context
-import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -17,10 +16,6 @@ import java.io.File
 import java.io.FileInputStream
 
 class ConfirmImage {
-
-    companion object {
-        const val REQUEST_IMAGE_CAPTURE = 1
-    }
 
     private var currentPhotoPath: String? = null
 
@@ -73,7 +68,7 @@ class ConfirmImage {
     }
     fun loadImageFromInternalStorage(context: Context, filename: String): Bitmap? {
         return try {
-            val completePath = File(context.filesDir, filename).absolutePath
+            val completePath = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES).toString() + "/" + filename
             val fis = FileInputStream(completePath)
             val bitmap = BitmapFactory.decodeStream(fis)
             fis.close()

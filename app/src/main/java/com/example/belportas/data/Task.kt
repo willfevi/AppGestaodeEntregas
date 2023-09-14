@@ -16,10 +16,12 @@ data class Task(
     var deliveryStatus: DeliveryStatus,
     var date: Date?,
     val clientName: String,
-    var imagePath: String? = null
+    var imagePath: String? = null,
+    var observation : String?= null
 ): Serializable
 enum class DeliveryStatus {
     PEDIDO_SEPARADO,
     PEDIDO_EM_TRANSITO,
-    PEDIDO_ENTREGUE
+    PEDIDO_ENTREGUE,
+    PEDIDO_EXCLUIDO
 }

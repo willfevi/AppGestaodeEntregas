@@ -5,7 +5,6 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.camera.core.ExperimentalGetImage
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -19,7 +18,7 @@ import com.example.belportas.model.handleSendXml
 import com.example.belportas.ui.theme.BelPortasTheme
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 
-@ExperimentalGetImage
+
 @ExperimentalPermissionsApi
 class MainActivity : AppCompatActivity() {
     private val taskViewModel: TaskViewModel by viewModels()
@@ -43,7 +42,7 @@ class MainActivity : AppCompatActivity() {
     private fun closeApp(){
         this.finishAffinity()
     }
-    @ExperimentalGetImage
+
     @Composable
     fun BelPortasApp(navController: NavHostController, taskViewModel: TaskViewModel) {
         val showDialog = remember { mutableStateOf(false) }

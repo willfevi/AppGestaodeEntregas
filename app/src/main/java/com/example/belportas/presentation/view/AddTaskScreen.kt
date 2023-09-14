@@ -47,6 +47,7 @@ fun AddTaskScreen(
     val cepValue = remember { mutableStateOf("") }
     val distanceValue = remember { mutableStateOf("↻") }
     val clientNameValue = remember { mutableStateOf("") }
+    val observationValue= remember { mutableStateOf("") }
     val validator = remember { ValidatingInputsFromTheAddTaskScreen() }
 
     Scaffold(
@@ -147,7 +148,9 @@ fun AddTaskScreen(
                                 deliveryStatus = DeliveryStatus.PEDIDO_SEPARADO,
                                 date = sdf.parse(currentDate),
                                 clientName = clientNameValue.value,
-                                phoneClient = phoneValue.value
+                                phoneClient = phoneValue.value,
+                                imagePath = null,
+                                observation = observationValue.value
                             )
                             taskViewModel.addTask(task)
                             Toast.makeText(

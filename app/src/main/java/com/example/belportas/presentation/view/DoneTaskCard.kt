@@ -158,7 +158,7 @@ fun DoneTaskCard(
             onDismissRequest = {
                 showDialog.value = false
             },
-            title = { Text(text = "Imagem da entrega no horário $hoursString e dia $dateString:") },
+            title = { Text(text = "Entrega no horário $hoursString e dia $dateString:") },
             text = {
                 imageBitmap.value?.let { img ->
                     val imageBitmapCompose = img.asImageBitmap()

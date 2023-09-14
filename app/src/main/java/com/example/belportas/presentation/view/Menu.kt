@@ -21,6 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Home
@@ -111,6 +112,14 @@ fun Menu(
                     icon = Icons.Filled.CheckCircle,
                     onClick = {
                         taskViewModel.setSelectedStatus(DeliveryStatus.PEDIDO_ENTREGUE)
+                        closeDrawerState()
+                    }
+                )
+                MenuItem(
+                    text = "Pedidos excluidos",
+                    icon = Icons.Filled.Delete,
+                    onClick = {
+                        taskViewModel.setSelectedStatus(DeliveryStatus.PEDIDO_EXCLUIDO)
                         closeDrawerState()
                     }
                 )
