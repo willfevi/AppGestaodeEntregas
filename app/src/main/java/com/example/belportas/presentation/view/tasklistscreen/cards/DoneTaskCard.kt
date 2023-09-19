@@ -1,4 +1,4 @@
-package com.example.belportas.presentation.view
+package com.example.belportas.presentation.view.tasklistscreen.cards
 import android.graphics.Bitmap
 import android.util.Log
 import androidx.compose.foundation.BorderStroke

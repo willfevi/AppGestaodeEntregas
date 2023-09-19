@@ -50,7 +50,7 @@ fun EditTaskScreen(
     val clientNameValue = rememberSaveable { mutableStateOf(task?.clientName ?: "") }
     val dateValue = rememberSaveable { mutableStateOf(task?.date ?: Date()) }
     val idValue = rememberSaveable { mutableLongStateOf(task?.id ?: 0L) }
-    val observationValue=  ""
+    val observationValue = rememberSaveable { mutableStateOf(task?.observation ?: "") }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -108,7 +108,7 @@ fun EditTaskScreen(
                                 date = dateValue.value,
                                 clientName = clientNameValue.value,
                                 phoneClient = phoneValue.value,
-                                observation = observationValue
+                                observation = observationValue.value
                             )
                             Log.d("EditTaskScreen", "Updating task with values: $updatedTask")
                             taskViewModel.updateTask(updatedTask)

@@ -15,6 +15,10 @@ import androidx.navigation.compose.rememberNavController
 import com.example.belportas.data.LocationService
 import com.example.belportas.model.TaskViewModel
 import com.example.belportas.model.handleSendXml
+import com.example.belportas.presentation.view.login.LoginScreen
+import com.example.belportas.presentation.view.login.ResetPasswordScreen
+import com.example.belportas.presentation.view.login.SingUpScreen
+import com.example.belportas.presentation.view.tasklistscreen.TaskListScreen
 import com.example.belportas.ui.theme.BelPortasTheme
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 

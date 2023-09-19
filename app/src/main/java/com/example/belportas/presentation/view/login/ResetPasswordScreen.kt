@@ -1,4 +1,4 @@
-package com.example.belportas.presentation.view
+package com.example.belportas.presentation.view.login
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,6 +22,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.belportas.R
+import com.example.belportas.presentation.view.CustomOutlinedTextField
 
 
 @Composable

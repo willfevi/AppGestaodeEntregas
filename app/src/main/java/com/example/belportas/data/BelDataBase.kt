@@ -10,7 +10,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.belportas.model.DateConverters
 import com.example.belportas.model.DeliveryStatusConverters
 
-@Database(entities = [Task::class], version = 3)  // Atualize a versão aqui
+@Database(entities = [Task::class], version = 3)
 @TypeConverters(DateConverters::class, DeliveryStatusConverters::class)
 abstract class BelDatabase : RoomDatabase() {
     abstract fun taskDao(): TaskDao
@@ -25,7 +25,7 @@ abstract class BelDatabase : RoomDatabase() {
             }
         }
 
-        private val MIGRATION_2_3 = object : Migration(2, 3) {  // Nova migração aqui
+        private val MIGRATION_2_3 = object : Migration(2, 3) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("ALTER TABLE Task ADD COLUMN observation TEXT")
             }
@@ -38,7 +38,7 @@ abstract class BelDatabase : RoomDatabase() {
                     BelDatabase::class.java,
                     "app_database"
                 )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)  // Adicione a nova migração aqui
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                     .build()
                 INSTANCE = instance
                 instance

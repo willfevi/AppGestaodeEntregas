@@ -1,4 +1,4 @@
-package com.example.belportas.presentation.view
+package com.example.belportas.presentation.view.tasklistscreen.cards
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*

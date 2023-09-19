@@ -1,4 +1,4 @@
-package com.example.belportas.presentation.view
+package com.example.belportas.presentation.view.tasklistscreen.cards
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
@@ -28,6 +28,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.belportas.data.Task
 import com.example.belportas.model.TaskViewModel
+import com.example.belportas.presentation.view.ConfirmDialog
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -113,7 +114,7 @@ fun DeletedCard(
             DefineProgressBar(task.deliveryStatus)
 
             Text(
-                text = "Motivo da exclusão:${task.observation}",
+                text = "    Motivo da exclusão: ${task.observation}",
                 fontWeight = FontWeight.Light,
                 style = MaterialTheme.typography.subtitle1
             )

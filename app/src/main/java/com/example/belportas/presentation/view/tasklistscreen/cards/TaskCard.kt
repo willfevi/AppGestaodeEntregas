@@ -1,4 +1,4 @@
-package com.example.belportas.presentation.view
+package com.example.belportas.presentation.view.tasklistscreen.cards
 
 import android.app.Activity
 import android.content.Context
@@ -62,6 +62,7 @@ import com.example.belportas.data.Task
 import com.example.belportas.model.ConfirmImage
 import com.example.belportas.model.OpenExternalApps
 import com.example.belportas.model.TaskViewModel
+import com.example.belportas.presentation.view.ConfirmDialogDelete
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale

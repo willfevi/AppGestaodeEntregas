@@ -1,7 +1,5 @@
-package com.example.belportas.presentation.view
+package com.example.belportas.presentation.view.tasklistscreen
 
-import android.content.Context
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,7 +24,6 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.rememberDrawerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -43,12 +40,14 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.belportas.R
 import com.example.belportas.data.DeliveryStatus
-import com.example.belportas.data.Task
 import com.example.belportas.model.TaskViewModel
-import com.google.android.material.datepicker.MaterialDatePicker
+import com.example.belportas.model.functionstasklistscreen.compareByDistanceThenName
+import com.example.belportas.presentation.view.ConfirmDialog
+import com.example.belportas.presentation.view.tasklistscreen.cards.DynamicTaskCard
+import com.example.belportas.presentation.view.tasklistscreen.datepicker.showDatePicker
+import com.example.belportas.presentation.view.tasklistscreen.menu.Menu
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.util.Calendar
 import java.util.Locale
 
 @Composable
@@ -192,35 +191,5 @@ fun TaskListScreen(
         )
     }
 }
-fun compareByDistanceThenName(task1: Task, task2: Task): Int {
-    val distance1 = task1.distance.split("km")[0].toIntOrNull() ?: 0
-    val distance2 = task2.distance.split("km")[0].toIntOrNull() ?: 0
-    val distanceComparison = distance1.compareTo(distance2)
 
-    return if (distanceComparison == 0) {
-        task1.clientName.compareTo(task2.clientName)
-    } else {
-        distanceComparison
-    }
-}
-
-
-fun showDatePicker(context: Context, selectedDate: MutableState<Long?>) {
-    val datePicker =
-        MaterialDatePicker.Builder.datePicker()
-            .setTitleText("Selecione a data:")
-            .build()
-
-    datePicker.addOnPositiveButtonClickListener { timestamp ->
-        val calendar = Calendar.getInstance()
-        calendar.timeInMillis = timestamp
-        calendar.add(Calendar.DAY_OF_MONTH, +1)
-        selectedDate.value = calendar.timeInMillis
-    }
-
-    val activity = context as? AppCompatActivity
-    activity?.supportFragmentManager?.let { fragmentManager ->
-        datePicker.show(fragmentManager, "DATE_PICKER")
-    }
-}
 
