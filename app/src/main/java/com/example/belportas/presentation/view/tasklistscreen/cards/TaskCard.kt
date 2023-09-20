@@ -6,6 +6,7 @@ import android.content.ContextWrapper
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -98,16 +99,25 @@ fun TaskCard(
 
     val onImageConfirmed: (Bitmap?) -> Unit = { bitmap ->
         if (bitmap != null) {
-            Log.d("CameraDebug", "Image confirmed!")
-            confirmImage.confirmAndSaveImage(context, task.noteNumber)?.let {
-                Log.d("CameraDebug", "Image saved successfully!")
-                taskViewModel.markTaskAsDelivered(task.id)
+            confirmImage.confirmAndSaveImage(context, task.noteNumber, task)?.let {
                 scope.launch {
                     swipeableState.snapTo(0f)
                 }
+                taskViewModel.markTaskAsDelivered(task.id)
+
+                Toast.makeText(
+                    context,
+                    "Entregue com sucesso!",
+                    Toast.LENGTH_SHORT
+                ).show()
+
                 isImageConfirmed.value = true
             } ?: run {
-                Log.d("CameraDebug", "Failed to save image.")
+                Toast.makeText(
+                    context,
+                    "Falha ao marcar como entregue!",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         } else {
             Log.d("CameraDebug", "Bitmap is null.")

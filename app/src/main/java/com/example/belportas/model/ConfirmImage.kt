@@ -25,6 +25,7 @@ class ConfirmImage {
         val photoURI = FileProvider.getUriForFile(activity, "${activity.packageName}.fileprovider", photoFile)
         launcher.launch(photoURI)
     }
+
     private fun createImageFile(context: Context): File {
         val filename = "TEMP_IMG.jpg"
         val storageDir = context.filesDir
@@ -34,8 +35,8 @@ class ConfirmImage {
     }
 
     @SuppressLint("InlinedApi")
-    fun confirmAndSaveImage(context: Context, taskNoteNumber: String): Uri? {
-        val bitmap: Bitmap = BitmapFactory.decodeFile(currentPhotoPath)
+    fun confirmAndSaveImage(context: Context, taskNoteNumber: String, task: Task): Uri? {
+        val bitmap: Bitmap = BitmapFactory.decodeFile(task.imagePath)
         return saveBitmapToMediaStore(context, bitmap, taskNoteNumber)
     }
 
@@ -47,7 +48,7 @@ class ConfirmImage {
         val contentValues = ContentValues().apply {
             put(MediaStore.Images.Media.DISPLAY_NAME, displayName)
             put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
-            put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
+            put(MediaStore.Images.Media.RELATIVE_PATH, "${Environment.DIRECTORY_PICTURES}/BelPortas")
         }
 
         var uri: Uri? = null
@@ -66,6 +67,7 @@ class ConfirmImage {
 
         return uri
     }
+
     fun loadImageFromInternalStorage(context: Context, filename: String): Bitmap? {
         return try {
             val completePath = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES).toString() + "/" + filename
@@ -79,7 +81,3 @@ class ConfirmImage {
         }
     }
 }
-
-
-
-
