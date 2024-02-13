@@ -26,7 +26,7 @@ class LocationService(private val context: Context) {
     }
 
     private val geoApiContext = GeoApiContext.Builder()
-        .apiKey("AIzaSyAgu6ypHGVEpzNdqQ6Ce2o_TO1p69ooJgI")
+        .apiKey()
         .build()
 
     private val calculateDistanceSemaphore = Semaphore(1)
