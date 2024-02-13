@@ -62,10 +62,6 @@
                 <data android:mimeType="application/xml" />
             </intent-filter>
         </activity>
-        <meta-data
-            android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyAgu6ypHGVEpzNdqQ6Ce2o_TO1p69ooJgI"
-         />
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
